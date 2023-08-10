@@ -20,8 +20,8 @@ class Function:
 
 class Polynomial(Function):
 
-        def __init__(self, *coefficients):
-            """
-                coefficients are in the form a_0, a_1, ... a_n
-            """
-            self.function = lambda x: sum(a * x ** i for i, a in enumerate(coefficients))
+    def __init__(self, *coefficients):
+        """
+            coefficients are in the form a_0, a_1, ... a_n
+        """
+        self.function = lambda x: sum(a * x ** i for i, a in enumerate(coefficients))
