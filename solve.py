@@ -1,12 +1,12 @@
-from typing import Callable, Literal
+from typing import Literal
 from function import Function
 
 class Solve:
 
     @staticmethod
-    def root(f: Callable, 
+    def root(f: Function, 
                 method: Literal["bisection", "fixed_point"],
-                a: float = None, b: float = None, p0: float = None, 
+                a: float = None, b: float = None, p0: float = None, g: Function = None,
                 TOLERANCE=1e-10, N=100):
 
         if method == "bisection":
@@ -20,7 +20,7 @@ class Solve:
         if method == "fixed_point":
             assert p0 is not None, "p0 must be defined"
 
-            return Solve.fixed_point(f, p0, TOLERANCE, N)
+            return Solve.fixed_point(f, p0, g, TOLERANCE, N)
 
     @staticmethod
     def bisection(f, a, b, TOLERANCE, N):
@@ -34,9 +34,8 @@ class Solve:
                 b = p
         return None
     
-    def fixed_point(f, p0, TOLERANCE, N):
-        g = Function.FixedPoint(f)
-
+    @staticmethod
+    def fixed_point(f, p0, g, TOLERANCE, N):
         for _ in range(N):
             p = g(p0)
             if abs(p - p0) < TOLERANCE:
