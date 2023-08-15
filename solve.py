@@ -5,8 +5,8 @@ class Solve:
 
     @staticmethod
     def root(f: Function, 
-                method: Literal["bisection", "fixed_point"],
-                a: float = None, b: float = None, p0: float = None, g: Function = None,
+                method: Literal["bisection", "newton"],
+                a: float = None, b: float = None, p0: float = None,
                 TOLERANCE=1e-10, N=100):
 
         if method == "bisection":
@@ -16,11 +16,11 @@ class Solve:
             assert f(a) * f(b) < 0, "f(a) and f(b) must have opposite signs"
 
             return Solve.bisection(f, a, b, TOLERANCE, N)
-
-        if method == "fixed_point":
+        
+        if method == "newton":
             assert p0 is not None, "p0 must be defined"
 
-            return Solve.fixed_point(f, p0, g, TOLERANCE, N)
+            return Solve.newton(f, p0, TOLERANCE, N)
 
     @staticmethod
     def bisection(f, a, b, TOLERANCE, N):
@@ -33,9 +33,22 @@ class Solve:
             else:
                 b = p
         return None
+
+    @staticmethod
+    def newton(f, p0, TOLERANCE, N):
+        f_deriv = f.derivative()
+
+        for _ in range(N):
+            p = p0 - f(p0) / f_deriv(p0)
+            if abs(p - p0) < TOLERANCE:
+                return p
+            p0 = p
+        return None
     
     @staticmethod
-    def fixed_point(f, p0, g, TOLERANCE, N):
+    def fixed_point(g: Function, p0: float, TOLERANCE=1e-10, N=100):
+        assert p0 is not None, "p0 must be defined"
+
         for _ in range(N):
             p = g(p0)
             if abs(p - p0) < TOLERANCE:

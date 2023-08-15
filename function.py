@@ -18,6 +18,9 @@ class Function:
     def __sub__(f, g):
         return Function(lambda x: f(x) - g(x))
 
+    def derivative(self, h=10e-5):
+        return Function(lambda x: (self(x + h) - self(x)) / h)
+
 class Polynomial(Function):
 
     def __init__(self, *coefficients):
