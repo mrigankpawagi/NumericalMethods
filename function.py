@@ -20,6 +20,20 @@ class Function:
 
     def derivative(self, h=10e-5):
         return Function(lambda x: (self(x + h) - self(x)) / h)
+    
+    def root(self, *args, **kwargs):
+        """
+        Wrapper for Solve.root
+        """
+        from solve import Solve
+        return Solve.root(self, *args, **kwargs)
+    
+    def fixed_point(self, *args, **kwargs):
+        """
+        Wrapper for Solve.fixed_point
+        """
+        from solve import Solve
+        return Solve.fixed_point(self, *args, **kwargs)
 
 class Polynomial(Function):
 
