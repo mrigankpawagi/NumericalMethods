@@ -11,3 +11,5 @@
 - Bisection
 - Newton-Raphson
 - Fixed-point iteration
+- Secant
+- Regula-Falsi
