@@ -13,3 +13,6 @@
 - Fixed-point iteration
 - Secant
 - Regula-Falsi
+
+---
+Some practice problem sets have been included in the `examples` directory.

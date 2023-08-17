@@ -1,0 +1,16 @@
+[project]
+name = "numerical_methods"
+version = "0.0.1"
+authors = [
+  { name="Mrigank Pawagi", email="mrigankp@iisc.ac.in" },
+]
+description = "Numerical methods library for UMC 202 at IISc."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/mrigankpawagi/NumericalMethods"
