@@ -133,4 +133,4 @@ class Solution:
         """
         f = Function(lambda x: (x**(2))**(1/3) * (-1 if x < 0 else 1))
         return f.root('newton', p0=0.1, TOLERANCE=1e-5)
-        # The iterates do not converge. They oscillate between two values.
+        # Converged at order 1.
