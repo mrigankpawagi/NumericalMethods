@@ -20,6 +20,21 @@ class Function:
     
     def __sub__(f, g):
         return Function(lambda x: f(x) - g(x))
+    
+    def __rtruediv__(f, g):
+        return Function(lambda x: g / f(x))
+    
+    def __rmul__(f, g):
+        return Function(lambda x: g * f(x))
+    
+    def __radd__(f, g):
+        return Function(lambda x: g + f(x))
+    
+    def __rsub__(f, g):
+        return Function(lambda x: g - f(x))
+    
+    def __neg__(f):
+        return Function(lambda x: -f(x))
 
     def differentiate(self, func=None, h=10e-5):
         """
@@ -144,6 +159,57 @@ class Polynomial(Function):
             coefficients are in the form a_0, a_1, ... a_n
         """
         self.function = lambda x: sum(a * x ** i for i, a in enumerate(coefficients))
+        self.coefficients = coefficients
+
+    @staticmethod
+    def interpolate(data: tuple, method: Literal["lagrange", "newton"]='newton', f: Function=None):
+        """
+            data is a list of (x, y) tuples.
+            alternative: f is a Function that returns the y values and data is a list of x values.
+        """
+        if f is not None:
+            data = [(x, f(x)) for x in data]
+
+        if method == "lagrange":
+            return Polynomial.interpolate_lagrange(data)
+        if method == "newton":
+            return Polynomial.interpolate_newton(data)
+        raise ValueError("Invalid method.")
+    
+    @staticmethod
+    def interpolate_lagrange(data: tuple):
+        """
+            data is a tuple of (x, y) tuples
+        """
+        raise NotImplementedError("Lagrange interpolation is not implemented yet.")
+    
+    @staticmethod
+    def interpolate_newton(data: tuple):
+        """
+            data is a tuple of (x, y) tuples
+        """
+        n = len(data)
+        x = [data[i][0] for i in range(n)]
+        y = [data[i][1] for i in range(n)]
+
+        def divided_difference(i, j):
+            if i == j:
+                return y[i]
+            return (divided_difference(i + 1, j) - divided_difference(i, j - 1)) / (x[j] - x[i])
+        
+        def factor_product(roots: list):
+            if not roots:
+                return Polynomial(1)
+            return Polynomial(-roots[0], 1) * factor_product(roots[1:])
+        
+        coefficients = [divided_difference(0, i) for i in range(n)]
+        
+        p = Polynomial(coefficients[0])
+        for i in range(1, n):
+            p = p + coefficients[i] * factor_product(x[:i])
+
+        return p
+            
 
 class Exponent(Function):
 

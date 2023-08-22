@@ -13,6 +13,8 @@
 - Fixed-point iteration
 - Secant
 - Regula-Falsi
+- Lagrange interpolation
+- Newton's divided difference interpolation
 
 ---
 Some practice problem sets have been included in the `examples` directory.
