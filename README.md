@@ -6,6 +6,7 @@
 - Support for polynomials
 - Support for function arithmetic
 - Support for derivatives
+- Allows probing algorithms
 
 ### Methods
 - Bisection
@@ -15,6 +16,9 @@
 - Regula-Falsi
 - Lagrange interpolation
 - Newton's divided difference interpolation
+
+### Utilities
+- Plotting (requires `matplotlib`)
 
 ---
 Some practice problem sets have been included in the `examples` directory.

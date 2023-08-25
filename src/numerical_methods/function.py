@@ -151,6 +151,22 @@ class Function:
             return None
         except OverflowError:
             return None
+        
+    def plot(self, min: float, max: float, N=1000, file: str="", clear: bool=False):
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        # get N equally spaced points in [min, max]
+        x = [min + (i/N) * + (max - min) for i in range(N)]
+        y = [self(t) for t in x]
+
+        if clear:
+            plt.clf()
+        plt.plot(x, y)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        if file:
+            plt.savefig(file)
 
 class Polynomial(Function):
 
