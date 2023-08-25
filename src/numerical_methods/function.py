@@ -21,6 +21,9 @@ class Function:
     def __sub__(f, g):
         return Function(lambda x: f(x) - g(x))
     
+    def __pow__(f, g):
+        return Function(lambda x: f(x) ** g(x))
+    
     def __rtruediv__(f, g):
         return Function(lambda x: g / f(x))
     
@@ -50,7 +53,7 @@ class Function:
         else:
             return Function(lambda x: (self(x + h) - self(x)) / h)
 
-    def root(self, method: Literal["bisection", "newton", "secant", "regula_falsi"],
+    def root(self, method: Literal["bisection", "newton", "secant", "regula_falsi", "modified_newton"],
                 a: float = None, b: float = None, 
                 p0: float = None, p1: float = None,
                 TOLERANCE=1e-10, N=100, 
@@ -94,6 +97,15 @@ class Function:
                 return sol, n
             return sol
         
+        if method == "modified_newton":
+            assert p0 is not None, "p0 must be defined"
+
+            sol, n = self.modified_newton(p0, TOLERANCE, N, early_stop)
+            if return_iterations:
+                return sol, n
+            return sol
+        
+        
         raise ValueError("Invalid method.")
 
     def bisection(self, a: float, b: float, TOLERANCE=1e-10, N=100, early_stop: int=None):
@@ -113,6 +125,20 @@ class Function:
         try:
             for i in range(N):
                 p = p0 - self(p0) / deriv(p0)
+                if abs(p - p0) < TOLERANCE or (early_stop is not None and i >= early_stop):
+                    return p, i + 1
+                p0 = p
+            return None, N
+        except ZeroDivisionError or OverflowError:
+            return None, i
+        
+    def modified_newton(self, p0: float, TOLERANCE=1e-10, N=100, early_stop: int=None):
+        deriv = self.differentiate()
+        double_deriv = deriv.differentiate()
+
+        try:
+            for i in range(N):
+                p = p0 - self(p0) * deriv(p0) / (deriv(p0) ** 2 - self(p0) * double_deriv(p0))
                 if abs(p - p0) < TOLERANCE or (early_stop is not None and i >= early_stop):
                     return p, i + 1
                 p0 = p
@@ -197,7 +223,19 @@ class Polynomial(Function):
         """
             data is a tuple of (x, y) tuples
         """
-        raise NotImplementedError("Lagrange interpolation is not implemented yet.")
+        n = len(data)
+        x = [data[i][0] for i in range(n)]
+        y = [data[i][1] for i in range(n)]
+        p = Polynomial(0)
+
+        for i in range(n):
+            L = Polynomial(1)
+            for j in range(n):
+                if i != j:
+                    L *= Polynomial(-x[j], 1) / Polynomial(x[i] - x[j])
+            p += y[i] * L
+
+        return p
     
     @staticmethod
     def interpolate_newton(data: tuple):
@@ -246,3 +284,8 @@ class Tan(Function):
         
     def __init__(self, f: Function):
         self.function = lambda x: math.tan(f(x))
+
+class Log(Function):
+
+    def __init__(self, f: Function, base: float=math.e):
+        self.function = lambda x: math.log(f(x), base)

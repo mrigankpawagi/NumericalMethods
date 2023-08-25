@@ -10,7 +10,7 @@
 
 ### Methods
 - Bisection
-- Newton-Raphson
+- Newton-Raphson and Modified Newton
 - Fixed-point iteration
 - Secant
 - Regula-Falsi
