@@ -4,7 +4,7 @@
 
 ### Functions
 - Support for polynomials
-- Support for function arithmetic
+- Support for function arithmetic, composition and other methods
 - Support for derivatives
 - Allows probing algorithms
 
@@ -15,7 +15,7 @@
 - Secant
 - Regula-Falsi
 - Lagrange interpolation
-- Newton's divided difference interpolation
+- Newton's divided difference, forward difference and backward difference interpolation
 
 ### Utilities
 - Plotting (requires `matplotlib`)

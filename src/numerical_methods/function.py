@@ -7,6 +7,8 @@ class Function:
         self.function = function
 
     def __call__(self, x):
+        if callable(x):
+            return Function(lambda p: self(x(p)))
         return self.function(x)
 
     def __truediv__(f, g):
@@ -194,6 +196,7 @@ class Function:
         if file:
             plt.savefig(file)
 
+
 class Polynomial(Function):
 
     def __init__(self, *coefficients):
@@ -204,7 +207,8 @@ class Polynomial(Function):
         self.coefficients = coefficients
 
     @staticmethod
-    def interpolate(data: tuple, method: Literal["lagrange", "newton"]='newton', f: Function=None):
+    def interpolate(data: tuple, method: Literal["lagrange", "newton"]='newton', f: Function=None,
+                    form: Literal["standard", "backward_diff", "forward_diff"]='standard'):
         """
             data is a list of (x, y) tuples.
             alternative: f is a Function that returns the y values and data is a list of x values.
@@ -215,7 +219,12 @@ class Polynomial(Function):
         if method == "lagrange":
             return Polynomial.interpolate_lagrange(data)
         if method == "newton":
-            return Polynomial.interpolate_newton(data)
+            if form == "standard":
+                return Polynomial.interpolate_newton(data)
+            if form == "backward_diff":
+                return Polynomial.interpolate_newton_backward_diff(data)
+            if form == "forward_diff":
+                return Polynomial.interpolate_newton_forward_diff(data)
         raise ValueError("Invalid method.")
     
     @staticmethod
@@ -263,7 +272,48 @@ class Polynomial(Function):
             p = p + coefficients[i] * factor_product(x[:i])
 
         return p
-            
+    
+    @staticmethod
+    def interpolate_newton_backward_diff(data: tuple):
+        """
+            data is a tuple of (x, y) tuples
+        """
+        from util import Util
+        data = sorted(data, key=lambda x: x[0])
+        diffs = sorted([data[i+1][0] - data[i][0] for i in range(len(data) - 1)])
+        for j in range(len(diffs) - 1):
+            assert abs(diffs[j+1] - diffs[j]) < 1e-6, "x values must be equally spaced"
+
+        h = abs(diffs[0])
+        n = len(data) - 1
+        
+        p = Polynomial(data[n][1])
+        for k in range(1, n+1):
+            p += (((-1) ** k) * Util.downdelta(k, n, data)) * Util.choose(Polynomial(data[n][0] / h, - 1 / h), k)
+
+        return p       
+
+
+    @staticmethod
+    def interpolate_newton_forward_diff(data: tuple):
+        """
+            data is a tuple of (x, y) tuples
+        """
+        from util import Util
+        data = sorted(data, key=lambda x: x[0])
+        diffs = sorted([data[i+1][0] - data[i][0] for i in range(len(data) - 1)])
+        for j in range(len(diffs) - 1):
+            assert abs(diffs[j+1] - diffs[j]) < 1e-6, "x values must be equally spaced"
+
+        h = abs(diffs[0])
+        n = len(data) - 1
+        
+        p = Polynomial(data[0][1])
+        for k in range(1, n+1):
+            p += Util.delta(k, 0, data) * Util.choose(Polynomial(-data[0][0] / h, 1 / h), k)
+
+        return p       
+
 
 class Exponent(Function):
 
