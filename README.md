@@ -7,6 +7,11 @@
 - Support for function arithmetic, composition and other methods
 - Support for derivatives
 - Allows probing algorithms
+- Support for integration
+    - Rectangular
+    - Midpoint
+    - Trapezoidal
+    - Simpson's
 
 ### Methods
 - Bisection

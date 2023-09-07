@@ -41,7 +41,7 @@ class Function:
     def __neg__(f):
         return Function(lambda x: -f(x))
 
-    def differentiate(self, func=None, h=10e-5):
+    def differentiate(self, func=None, h=1e-5):
         """
         Sets or returns the derivative of the function.
         If func is None, returns the derivative.
@@ -54,6 +54,63 @@ class Function:
             self.derivative = Function(func)
         else:
             return Function(lambda x: (self(x + h) - self(x)) / h)
+        
+    def integral(self, func=None, h=1e-5):
+        """
+        Sets or returns the integral of the function.
+        If func is None, returns the integral.
+        If func is a Function, sets the integral to func.
+        If func is a lambda, sets the integral to a Function with the lambda.
+        """
+        if isinstance(func, Function):
+            self.integral = func
+        elif callable(func):
+            self.integral = Function(func)
+        else:
+            raise NotImplementedError("Not implemented yet.")
+        
+    def integrate(self, a: float, b: float, method: Literal['rectangular', 'midpoint', 'trapezoidal', 'simpson']=None, n: int=None):
+        """
+        Definite integral of the function from a to b.
+        """
+        if method == 'rectangular':
+            return self.integrate_rectangular(a, b, n)
+        if method == 'midpoint':
+            return self.integrate_midpoint(a, b, n)
+        if method == 'trapezoidal':
+            return self.integrate_trapezoidal(a, b, n)
+        if method == 'simpson':
+            return self.integrate_simpson(a, b, n)
+        
+        if hasattr(self, 'integral'):
+            return self.integral(b) - self.integral(a)
+
+        raise ValueError("Invalid method.")
+    
+    def integrate_rectangular(self, a: float, b: float, n: int = None):
+        if not n: 
+            return (b - a) * self(a)
+        
+        h = (b - a) / n
+        return h * sum(self(a + i * h) for i in range(n))
+    
+    def integrate_midpoint(self, a: float, b: float, n: int = None):
+        if not n: 
+            return (b - a) * self((a + b) / 2)
+        
+    def integrate_trapezoidal(self, a: float, b: float, n: int = None):
+        if not n: 
+            return (b - a) * (self(a) + self(b)) / 2
+        
+        h = (b - a) / n
+        return h * (self(a) + 2 * sum(self(a + i * h) for i in range(1, n)) + self(b)) / 2
+        
+    def integrate_simpson(self, a: float, b: float, n: int = None):
+        if not n: 
+            return (b - a) * (self(a) + 4 * self((a + b) / 2) + self(b)) / 6
+        
+        h = (b - a) / n
+        return h * (self(a) + 4 * sum(self(a + i * h + h / 2) for i in range(1, n)) + 2 * sum(self(a + i * h) for i in range(1, n)) + self(b)) / 6
 
     def root(self, method: Literal["bisection", "newton", "secant", "regula_falsi", "modified_newton"],
                 a: float = None, b: float = None, 
