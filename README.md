@@ -10,7 +10,7 @@
 - Support for integration
     - Rectangular
     - Midpoint
-    - Trapezoidal
+    - Trapezoidal 
     - Simpson's
 
 ### Methods

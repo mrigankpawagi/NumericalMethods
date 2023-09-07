@@ -37,7 +37,7 @@ class Solution:
         Use simpson's rule to find an approximate value of the integral
         int_4^6 1 / (3 - sqrt(x)) dx
         """
-        f = 1 / (3 - Polynomial(1, 0, 1) ** Polynomial(0.5))
+        f = 1 / (3 - Polynomial(0, 1) ** Polynomial(0.5))
         return f.integrate(4, 6, method='simpson')
 
     @staticmethod
@@ -59,7 +59,7 @@ class Solution:
         """
         Evaluate the integral int_0^4 (x^2 + cos x) dx by using the midpoint formula.
         """
-        f = Polynomial(1, 0, 1) + Cos(Polynomial(0, 1))
+        f = Polynomial(0, 0, 1) + Cos(Polynomial(0, 1))
         return f.integrate(0, 4, method='midpoint')
 
     @staticmethod
