@@ -130,4 +130,15 @@ class Solution:
 
     @staticmethod
     def problem6():
-        pass
+        """
+        Redo Problem 5 using the Gaussian quadrature formula with n = 1, n = 2 in both dimensions.
+        """        
+        a, b = 1.0, 1.5
+        c, d = 1.4, 2.0
+        
+        f = lambda r: ((b-a)/2) * Log(Polynomial(2 * (((a + b)/2) + ((b-a)/2) * r), 1))
+        
+        g = f(-1/math.sqrt(3)) + f(1/math.sqrt(3))
+        res = g.integrate(c, d, method='gauss', n=1)
+        
+        return res 
