@@ -12,6 +12,7 @@
     - Midpoint
     - Trapezoidal 
     - Simpson's
+    - Gaussian Quadrature (n = 1, 2)
 
 ### Methods
 - Bisection
