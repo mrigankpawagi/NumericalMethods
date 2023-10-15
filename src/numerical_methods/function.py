@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Callable
 import math
 
 class Function:
@@ -252,6 +252,8 @@ class Function:
         plt.ylabel('y')
         if file:
             plt.savefig(file)
+        else:
+            plt.show()
 
 
 class Polynomial(Function):
@@ -396,3 +398,61 @@ class Log(Function):
 
     def __init__(self, f: Function, base: float=math.e):
         self.function = lambda x: math.log(f(x), base)
+
+
+class OrdinaryDifferentialEquation:
+
+    def __init__(self):
+        pass
+    
+class LinearODE(OrdinaryDifferentialEquation):
+
+    def __init__(self):
+        pass
+    
+class FirstOrderLinearODE(LinearODE):
+    """
+    y'(x) = f(x, y(x))
+    """
+
+    def __init__(self, f: Callable, fy: Callable, a: float, b: float, y0: float):
+        """
+        f is a function of x and y(x)
+        evaluated at (x, w) by f(w)(x)
+        
+        fy is the same function but evaluated at (x, w) by fy(x)(w)
+        """
+        self.f = f
+        self.fy = fy
+        self.a = a
+        self.b = b
+        self.y0 = y0
+        
+    def solve(self, h: float = 0.1, method: Literal["euler", "runge_kutta", "taylor"]='euler', n: int = 1):
+        if method == "euler":
+            return self.solve_taylor(h, 1)
+        if method == "runge_kutta":
+            return self.solve_runge_kutta(h, n)
+        if method == "taylor":
+            return self.solve_taylor(h, n)
+        raise ValueError("Invalid method.")
+
+    def solve_runge_kutta(self, h: float, n: int):
+        pass
+    
+    def solve_taylor(self, h: float, n: int) -> Polynomial:
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        if n == 1:
+            for i in range(N):
+                xi = self.a + i * h
+                w.append(w[i] + h * self.f(w[i])(xi))
+        elif n == 2:
+            for i in range(N):
+                xi = self.a + i * h
+                # g = f'
+                g = self.f(w[i]).differentiate()(xi) + self.f(w[i])(xi) * self.fy(xi).differentiate()(w[i])
+                
+                w.append(w[i] + h * self.f(w[i])(xi) + (h ** 2) * g / 2)
+                
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
