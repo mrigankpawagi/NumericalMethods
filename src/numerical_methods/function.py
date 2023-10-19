@@ -474,18 +474,24 @@ class FirstOrderLinearODE(LinearODE):
         self.b = b
         self.y0 = y0
         
-    def solve(self, h: float = 0.1, method: Literal["euler", "rk", "taylor", "trapezoidal"]='euler', n: int = 1):
+    def solve(self, h: float = 0.1, method: Literal["euler", "runge-kutta", "taylor", "trapezoidal", "adam-bashforth", "adam-moulton", "predictor-corrector"]='euler', n: int = 1, step: int = 2, points: list[float]=[]):
         if method == "euler":
             return self.solve_taylor(h, 1)
-        if method == "rk":
+        if method == "runge-kutta":
             return self.solve_runge_kutta(h, n)
         if method == "taylor":
             return self.solve_taylor(h, n)
         if method == "trapezoidal":
             return self.solve_trapezoidal(h)
+        if method == "adam-bashforth":
+            return self.solve_adam_bashforth(h, step, points)
+        if method == "adam-moulton":
+            return self.solve_adam_moulton(h, step, points)
+        if method == "predictor-corrector":
+            return self.solve_predictor_corrector(h)
         raise ValueError("Invalid method.")
 
-    def solve_runge_kutta(self, h: float, n: int):
+    def solve_runge_kutta(self, h: float, n: int) -> Polynomial:
         w = [self.y0]
         N = int((self.b - self.a) / h)
         if n == 1:
@@ -494,8 +500,23 @@ class FirstOrderLinearODE(LinearODE):
             for i in range(N):
                 xi = self.a + i * h
                 w.append(w[i] + (h/2) * self.f(xi, w[i]) + (h/2) * self.f(xi + h, w[i] + h * self.f(xi, w[i])))
+        elif n == 3:
+            for i in range(N):
+                xi = self.a + i * h
+                k1 = self.f(xi, w[i])
+                k2 = self.f(xi + (h/3), w[i] + (h/3) * k1)
+                k3 = self.f(xi + (2/3) * h, w[i] + (2/3) * h * k2)
+                w.append(w[i] + (h/4) * (k1 + 3 * k3))
+        elif n == 4:
+            for i in range(N):
+                xi = self.a + i * h
+                k1 = h * self.f(xi, w[i])
+                k2 = h * self.f(xi + h/2, w[i] + 0.5 * k1)
+                k3 = h * self.f(xi + h/2, w[i] + 0.5 * k2)
+                k4 = h * self.f(xi + h, w[i] + k3)
+                w.append(w[i] + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4))
         else:
-            raise NotImplementedError("Not implemented for n > 2 yet.")
+            raise NotImplementedError("Not implemented for n > 4 yet.")
         
         return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
     
@@ -526,3 +547,77 @@ class FirstOrderLinearODE(LinearODE):
             w.append(g.fixed_point(w[i]))
             
         return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_adam_bashforth(self, h: float, step: int, points: list[float]) -> Polynomial:
+        w = [self.y0] + points
+        N = int((self.b - self.a) / h)
+        if step == 2:
+            for i in range(1, N):
+                xi = self.a + i * h
+                w.append(w[i] + (h/2) * (3 * self.f(xi, w[i]) - self.f(xi - h, w[i-1])))
+        elif step == 3:
+            for i in range(2, N):
+                xi = self.a + i * h
+                w.append(w[i] + (h/12) * (23 * self.f(xi, w[i]) - 16 * self.f(xi - h, w[i-1]) + 5 * self.f(xi - 2 * h, w[i-2])))
+        elif step == 4:
+            for i in range(3, N):
+                xi = self.a + i * h
+                w.append(w[i] + (h/24) * (55 * self.f(xi, w[i]) - 59 * self.f(xi - h, w[i-1]) + 37 * self.f(xi - 2 * h, w[i-2]) - 9 * self.f(xi - 3 * h, w[i-3])))
+        else:
+            if step > 1:
+                raise NotImplementedError("Not implemented for step > 4 yet.")
+            else:
+                raise ValueError("Step must be greater than 1.")
+        
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_adam_moulton(self, h: float, step: int, points: list[float]) -> Polynomial:
+        w = [self.y0] + points
+        N = int((self.b - self.a) / h)
+        if step == 2:
+            for i in range(1, N):
+                xi = self.a + i * h
+                g = Function(lambda x: w[i] + (h/12) * (5 * self.f(xi + h, x) + 8 * self.f(xi, w[i]) - self.f(xi - h, w[i-1])))
+                w.append(g.fixed_point(w[i]))
+        elif step == 3:
+            for i in range(2, N):
+                xi = self.a + i * h
+                g = Function(lambda x: w[i] + (h/24) * (9 * self.f(xi + h, x) + 19 * self.f(xi, w[i]) - 5 * self.f(xi - h, w[i-1]) + self.f(xi - 2 * h, w[i-2])))
+                w.append(g.fixed_point(w[i]))
+        elif step == 4:
+            for i in range(3, N):
+                xi = self.a + i * h
+                g = Function(lambda x: w[i] + (h/720) * (251 * self.f(xi + h, x) + 646 * self.f(xi, w[i]) - 264 * self.f(xi - h, w[i-1]) + 106 * self.f(xi - 2 * h, w[i-2]) - 19 * self.f(xi - 3 * h, w[i-3])))
+                w.append(g.fixed_point(w[i]))
+        else:
+            if step > 1:
+                raise NotImplementedError("Not implemented for step > 4 yet.")
+            else:
+                raise ValueError("Step must be greater than 1.")
+        
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_predictor_corrector(self, h: float) -> Polynomial:
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        alphas = [self.a + h * i for i in range(1, 4)]
+
+        # determine starting values with runge-kutta order-4
+        g = self.f
+        ivp = FirstOrderLinearODE(g, self.a, self.a + 3 * h, self.y0)
+        rk_sol = ivp.solve_runge_kutta(h, 4)
+        for i in range(3):
+            w.append(rk_sol(alphas[i]))
+            
+        for i in range(3, N):
+            xi = self.a + i * h
+            
+            # Predictor: Adams-Bashforth order-4
+            prediction = w[i] + (h/24) * (55 * self.f(xi, w[i]) - 59 * self.f(xi - h, w[i-1]) + 37 * self.f(xi - 2 * h, w[i-2]) - 9 * self.f(xi - 3 * h, w[i-3]))
+            
+            # Corrector: Adams-Moulton order-3
+            correction = w[i] + (h/24) * (9 * self.f(xi + h, prediction) + 19 * self.f(xi, w[i]) - 5 * self.f(xi - h, w[i-1]) + self.f(xi - 2 * h, w[i-2]))
+            
+            w.append(correction)
+            
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])           

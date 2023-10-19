@@ -42,7 +42,7 @@ class Solution:
         Redo Problem 1 using the Runga Kutta method of order 2.
         """
         def answer(f, a, b, y0, h):
-            return FirstOrderLinearODE(f, a, b, y0).solve(h, method='rk', n=2)(b)
+            return FirstOrderLinearODE(f, a, b, y0).solve(h, method='runge-kutta', n=2)(b)
 
         # (a) y' = y/x - (y/x)^2, y(1) = 1, 1 <= x <= 2, h = 0.1
         ans1 = answer(BivariateFunction(lambda x, y: y / x - (y / x)**2), 1, 2, 1, 0.1)
@@ -91,7 +91,7 @@ class Solution:
             sol1 = FirstOrderLinearODE(f, a, b, y0).solve(h, method='taylor', n=2)(b)
             err1 = abs(gt(b) - sol1)
         
-            sol2 = FirstOrderLinearODE(f, a, b, y0).solve(h, method='rk', n=2)(b)
+            sol2 = FirstOrderLinearODE(f, a, b, y0).solve(h, method='runge-kutta', n=2)(b)
             err2 = abs(gt(b) - sol2)
             
             sol3 = FirstOrderLinearODE(f, a, b, y0).solve(h, method='trapezoidal')(b)
@@ -102,7 +102,7 @@ class Solution:
                     'result': sol1,
                     'error': err1
                 },
-                'rk': {
+                'runge-kutta': {
                     'result': sol2,
                     'error': err2
                 },

@@ -34,8 +34,11 @@
 - Solving initial value problems on one-dimensional first order linear ODEs
     - Euler's method
     - Taylor's method (for n = 1, 2)
-    - Runga Kutta (for n = 1, 2)
+    - Runga Kutta (for n = 1, 2, 3, 4)
     - Trapezoidal
+    - Adam-Bashforth (for n = 2, 3, 4)
+    - Adam-Moulton (for n = 2, 3, 4)
+    - Predictor-Corrector (with initial approximation from Runga-Kutta order-4, predictor as Adam-Bashforth order-4 and corrector as Adam-Moulton order-3)
 
 ### Utilities
 - Plotting (requires `matplotlib`)
