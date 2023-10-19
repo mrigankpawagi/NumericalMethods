@@ -90,7 +90,7 @@ class Function:
         else:
             raise NotImplementedError("Not implemented yet.")
         
-    def integrate(self, a: float, b: float, method: Literal['rectangular', 'midpoint', 'trapezoidal', 'simpson']=None, n: int=None):
+    def integrate(self, a: float, b: float, method: Literal['rectangular', 'midpoint', 'trapezoidal', 'simpson', 'gauss']=None, n: int=None):
         """
         Definite integral of the function from a to b.
         """
@@ -102,6 +102,8 @@ class Function:
             return self.integrate_trapezoidal(a, b, n)
         if method == 'simpson':
             return self.integrate_simpson(a, b, n)
+        if method == 'gauss':
+            return self.integrate_gauss(a, b, n)
         
         if hasattr(self, 'integral'):
             return self.integral(b) - self.integral(a)
@@ -119,6 +121,9 @@ class Function:
         if not n: 
             return (b - a) * self((a + b) / 2)
         
+        h = (b - a) / n
+        return h * sum(self(a + i * h + h / 2) for i in range(n))
+        
     def integrate_trapezoidal(self, a: float, b: float, n: int = None):
         if not n: 
             return (b - a) * (self(a) + self(b)) / 2
@@ -131,7 +136,18 @@ class Function:
             return (b - a) * (self(a) + 4 * self((a + b) / 2) + self(b)) / 6
         
         h = (b - a) / n
-        return h * (self(a) + 4 * sum(self(a + i * h + h / 2) for i in range(1, n)) + 2 * sum(self(a + i * h) for i in range(1, n)) + self(b)) / 6
+        return h * (self(a) + 4 * sum(self(a + i * h + h / 2) for i in range(n)) + 2 * sum(self(a + i * h) for i in range(1, n)) + self(b)) / 6
+    
+    def integrate_gauss(self, a: float, b: float, n: int = None):
+        t = Polynomial((a+b)/2, (b-a)/2)
+        g = ((b-a)/2) * self(t) 
+        if n == 1:
+            return 2 * g(0)
+        if n == 2:
+            return g(-1/math.sqrt(3)) + g(1/math.sqrt(3))
+
+        raise NotImplementedError("Not implemented except for n=1 and n=2.")
+                        
 
     def root(self, method: Literal["bisection", "newton", "secant", "regula_falsi", "modified_newton"],
                 a: float = None, b: float = None, 

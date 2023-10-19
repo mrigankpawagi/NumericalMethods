@@ -16,6 +16,7 @@
     - Midpoint
     - Trapezoidal 
     - Simpson's
+    - Gaussian Quadrature (n = 1, 2)
 - Support for bivariate functions
 
 ### Methods
