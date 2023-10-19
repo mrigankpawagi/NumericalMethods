@@ -458,17 +458,30 @@ class FirstOrderLinearODE(LinearODE):
         self.b = b
         self.y0 = y0
         
-    def solve(self, h: float = 0.1, method: Literal["euler", "runge_kutta", "taylor"]='euler', n: int = 1):
+    def solve(self, h: float = 0.1, method: Literal["euler", "rk", "taylor", "trapezoidal"]='euler', n: int = 1):
         if method == "euler":
             return self.solve_taylor(h, 1)
-        if method == "runge_kutta":
+        if method == "rk":
             return self.solve_runge_kutta(h, n)
         if method == "taylor":
             return self.solve_taylor(h, n)
+        if method == "trapezoidal":
+            return self.solve_trapezoidal(h)
         raise ValueError("Invalid method.")
 
     def solve_runge_kutta(self, h: float, n: int):
-        pass
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        if n == 1:
+            return self.solve(h, method='euler')
+        elif n == 2:
+            for i in range(N):
+                xi = self.a + i * h
+                w.append(w[i] + (h/2) * self.f(xi, w[i]) + (h/2) * self.f(xi + h, w[i] + h * self.f(xi, w[i])))
+        else:
+            raise NotImplementedError("Not implemented for n > 2 yet.")
+        
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
     
     def solve_taylor(self, h: float, n: int) -> Polynomial:
         w = [self.y0]
@@ -486,4 +499,14 @@ class FirstOrderLinearODE(LinearODE):
         else:
             raise NotImplementedError("Not implemented for n > 2 yet.")
 
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])     
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_trapezoidal(self, h: float) -> Polynomial:
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        for i in range(N):
+            xi = self.a + i * h
+            g = Function(lambda x: w[i] + (h/2) * (self.f(xi, w[i]) + self.f(xi + h, x)))
+            w.append(g.fixed_point(w[i]))
+            
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])

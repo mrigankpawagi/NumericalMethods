@@ -33,6 +33,8 @@
 - Solving initial value problems on one-dimensional first order linear ODEs
     - Euler's method
     - Taylor's method (for n = 1, 2)
+    - Runga Kutta (for n = 1, 2)
+    - Trapezoidal
 
 ### Utilities
 - Plotting (requires `matplotlib`)
