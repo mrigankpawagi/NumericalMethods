@@ -41,7 +41,7 @@ class Function:
     def __neg__(f):
         return Function(lambda x: -f(x))
 
-    def differentiate(self, func=None, h=1e-5):
+    def differentiate(self, func=None, h=1e-5, method:Literal['forward', 'backward', 'central']='forward'):
         """
         Sets or returns the derivative of the function.
         If func is None, returns the derivative.
@@ -53,8 +53,29 @@ class Function:
         elif callable(func):
             self.derivative = Function(func)
         else:
-            return Function(lambda x: (self(x + h) - self(x)) / h)
+            if method == 'forward':
+                return self.differentiate_forward(h)
+            if method == 'backward':
+                return self.differentiate_forward(-h)
+            if method == 'central':
+                return self.differentiate_central(h)
+            
+            raise ValueError("Invalid method.")
         
+    def differentiate_forward(self, h):
+       return Function(lambda x: (self(x + h) - self(x)) / h)
+   
+    def differentiate_central(self, h):
+        return Function(lambda x: (self(x + h) - self(x - h)) / (2 * h))
+    
+    def multi_differentiate(self, n: int, h=1e-5, method:Literal['forward', 'backward', 'central']='forward'):
+        """
+        Returns the nth derivative of the function.
+        """
+        if n == 0:
+            return self
+        return self.differentiate(h=h, method=method).multi_differentiate(n - 1, h, method)
+
     def integral(self, func=None, h=1e-5):
         """
         Sets or returns the integral of the function.
@@ -398,7 +419,20 @@ class Log(Function):
 
     def __init__(self, f: Function, base: float=math.e):
         self.function = lambda x: math.log(f(x), base)
+        
+class BivariateFunction:
 
+    def __init__(self, function):
+        self.function = function
+        
+    def __call__(self, x=None, y=None):
+        if x is not None and y is not None:
+            return self.function(x, y)
+        if x is not None:
+            return Function(lambda z: self(x, z))
+        if y is not None:
+            return Function(lambda z: self(z, y))
+        raise ValueError("x or y must be defined.")
 
 class OrdinaryDifferentialEquation:
 
@@ -415,15 +449,11 @@ class FirstOrderLinearODE(LinearODE):
     y'(x) = f(x, y(x))
     """
 
-    def __init__(self, f: Callable, fy: Callable, a: float, b: float, y0: float):
+    def __init__(self, f: BivariateFunction, a: float, b: float, y0: float):
         """
         f is a function of x and y(x)
-        evaluated at (x, w) by f(w)(x)
-        
-        fy is the same function but evaluated at (x, w) by fy(x)(w)
         """
         self.f = f
-        self.fy = fy
         self.a = a
         self.b = b
         self.y0 = y0
@@ -446,13 +476,14 @@ class FirstOrderLinearODE(LinearODE):
         if n == 1:
             for i in range(N):
                 xi = self.a + i * h
-                w.append(w[i] + h * self.f(w[i])(xi))
+                w.append(w[i] + h * self.f(xi, w[i]))
         elif n == 2:
             for i in range(N):
                 xi = self.a + i * h
                 # g = f'
-                g = self.f(w[i]).differentiate()(xi) + self.f(w[i])(xi) * self.fy(xi).differentiate()(w[i])
-                
-                w.append(w[i] + h * self.f(w[i])(xi) + (h ** 2) * g / 2)
-                
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+                g = self.f(None, w[i]).differentiate()(xi) + self.f(xi, w[i]) * self.f(xi, None).differentiate()(w[i])
+                w.append(w[i] + h * self.f(xi, w[i]) + (h ** 2) * g / 2)
+        else:
+            raise NotImplementedError("Not implemented for n > 2 yet.")
+
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])     
