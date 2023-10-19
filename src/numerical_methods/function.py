@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Callable
 import math
 
 class Function:
@@ -41,7 +41,7 @@ class Function:
     def __neg__(f):
         return Function(lambda x: -f(x))
 
-    def differentiate(self, func=None, h=1e-5):
+    def differentiate(self, func=None, h=1e-5, method:Literal['forward', 'backward', 'central']='forward'):
         """
         Sets or returns the derivative of the function.
         If func is None, returns the derivative.
@@ -53,8 +53,29 @@ class Function:
         elif callable(func):
             self.derivative = Function(func)
         else:
-            return Function(lambda x: (self(x + h) - self(x)) / h)
+            if method == 'forward':
+                return self.differentiate_forward(h)
+            if method == 'backward':
+                return self.differentiate_forward(-h)
+            if method == 'central':
+                return self.differentiate_central(h)
+            
+            raise ValueError("Invalid method.")
         
+    def differentiate_forward(self, h):
+       return Function(lambda x: (self(x + h) - self(x)) / h)
+   
+    def differentiate_central(self, h):
+        return Function(lambda x: (self(x + h) - self(x - h)) / (2 * h))
+    
+    def multi_differentiate(self, n: int, h=1e-5, method:Literal['forward', 'backward', 'central']='forward'):
+        """
+        Returns the nth derivative of the function.
+        """
+        if n == 0:
+            return self
+        return self.differentiate(h=h, method=method).multi_differentiate(n - 1, h, method)
+
     def integral(self, func=None, h=1e-5):
         """
         Sets or returns the integral of the function.
@@ -268,6 +289,8 @@ class Function:
         plt.ylabel('y')
         if file:
             plt.savefig(file)
+        else:
+            plt.show()
 
 
 class Polynomial(Function):
@@ -412,3 +435,94 @@ class Log(Function):
 
     def __init__(self, f: Function, base: float=math.e):
         self.function = lambda x: math.log(f(x), base)
+        
+class BivariateFunction:
+
+    def __init__(self, function):
+        self.function = function
+        
+    def __call__(self, x=None, y=None):
+        if x is not None and y is not None:
+            return self.function(x, y)
+        if x is not None:
+            return Function(lambda z: self(x, z))
+        if y is not None:
+            return Function(lambda z: self(z, y))
+        raise ValueError("x or y must be defined.")
+
+class OrdinaryDifferentialEquation:
+
+    def __init__(self):
+        pass
+    
+class LinearODE(OrdinaryDifferentialEquation):
+
+    def __init__(self):
+        pass
+    
+class FirstOrderLinearODE(LinearODE):
+    """
+    y'(x) = f(x, y(x))
+    """
+
+    def __init__(self, f: BivariateFunction, a: float, b: float, y0: float):
+        """
+        f is a function of x and y(x)
+        """
+        self.f = f
+        self.a = a
+        self.b = b
+        self.y0 = y0
+        
+    def solve(self, h: float = 0.1, method: Literal["euler", "rk", "taylor", "trapezoidal"]='euler', n: int = 1):
+        if method == "euler":
+            return self.solve_taylor(h, 1)
+        if method == "rk":
+            return self.solve_runge_kutta(h, n)
+        if method == "taylor":
+            return self.solve_taylor(h, n)
+        if method == "trapezoidal":
+            return self.solve_trapezoidal(h)
+        raise ValueError("Invalid method.")
+
+    def solve_runge_kutta(self, h: float, n: int):
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        if n == 1:
+            return self.solve(h, method='euler')
+        elif n == 2:
+            for i in range(N):
+                xi = self.a + i * h
+                w.append(w[i] + (h/2) * self.f(xi, w[i]) + (h/2) * self.f(xi + h, w[i] + h * self.f(xi, w[i])))
+        else:
+            raise NotImplementedError("Not implemented for n > 2 yet.")
+        
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_taylor(self, h: float, n: int) -> Polynomial:
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        if n == 1:
+            for i in range(N):
+                xi = self.a + i * h
+                w.append(w[i] + h * self.f(xi, w[i]))
+        elif n == 2:
+            for i in range(N):
+                xi = self.a + i * h
+                # g = f'
+                g = self.f(None, w[i]).differentiate()(xi) + self.f(xi, w[i]) * self.f(xi, None).differentiate()(w[i])
+                w.append(w[i] + h * self.f(xi, w[i]) + (h ** 2) * g / 2)
+        else:
+            raise NotImplementedError("Not implemented for n > 2 yet.")
+
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+    
+    def solve_trapezoidal(self, h: float) -> Polynomial:
+        w = [self.y0]
+        N = int((self.b - self.a) / h)
+        for i in range(N):
+            xi = self.a + i * h
+            g = Function(lambda x: w[i] + (h/2) * (self.f(xi, w[i]) + self.f(xi + h, x)))
+            w.append(g.fixed_point(w[i]))
+            
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])

@@ -5,7 +5,11 @@
 ### Functions
 - Support for polynomials
 - Support for function arithmetic, composition and other methods
-- Support for derivatives
+- Support for derivatives and differentiation
+    - Forward difference
+    - Backward difference
+    - Central difference
+    - n-th order derivative
 - Allows probing algorithms
 - Support for integration
     - Rectangular
@@ -13,15 +17,25 @@
     - Trapezoidal 
     - Simpson's
     - Gaussian Quadrature (n = 1, 2)
+- Support for bivariate functions
 
 ### Methods
-- Bisection
-- Newton-Raphson and Modified Newton
-- Fixed-point iteration
-- Secant
-- Regula-Falsi
-- Lagrange interpolation
-- Newton's divided difference, forward difference and backward difference interpolation
+- Root finding
+    - Bisection
+    - Newton-Raphson and Modified Newton
+    - Fixed-point iteration
+    - Secant
+    - Regula-Falsi
+- Interpolating Polynomial
+    - Lagrange
+    - Newton's divided difference
+    - Forward difference
+    - Backward difference
+- Solving initial value problems on one-dimensional first order linear ODEs
+    - Euler's method
+    - Taylor's method (for n = 1, 2)
+    - Runga Kutta (for n = 1, 2)
+    - Trapezoidal
 
 ### Utilities
 - Plotting (requires `matplotlib`)
