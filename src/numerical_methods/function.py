@@ -738,9 +738,11 @@ class SecondOrderLinearODE_BVP(LinearODE):
         self.y0 = y0 # y(a)
         self.y1 = y1 # y(b)
         
-    def solve(self, h: float = 0.1, method: Literal["shooting"]="shooting"):
+    def solve(self, h: float = 0.1, method: Literal["shooting", "finite_difference"]="shooting"):
         if method == "shooting":
             return self.solve_shooting(h)
+        if method == "finite_difference":
+            return self.solve_finite_difference(h)
         raise ValueError("Invalid method.")
     
     def solve_shooting(self, h: float) -> Polynomial:
@@ -759,6 +761,37 @@ class SecondOrderLinearODE_BVP(LinearODE):
         c = (self.y1 - sol1(self.b)) / sol2(self.b)
         
         return sol1 + c * sol2
+    
+    def solve_finite_difference(self, h: float) -> Polynomial:
+        N = int((self.b - self.a) / h) - 1
+        A = Matrix(*[Vector(*[0 for _ in range(N)]) for _ in range(N)])
+        b = Vector(*[0 for _ in range(N)])
+        
+        # First row
+        A[0][0] = -(2 + (h ** 2) * self.q(self.a + h))
+        A[0][1] = 1 - (h / 2) * self.p(self.a + h)
+        b[0] = (h ** 2) * self.r(self.a + h) - (1 + (h / 2) * self.p(self.a + h)) * self.y0
+        
+        # Middle rows
+        for i in range(1, N - 1):
+            xi = self.a + i * h
+            A[i][i-1] = 1 + (h / 2) * self.p(xi)
+            A[i][i] = -(2 + (h ** 2) * self.q(xi))
+            A[i][i+1] = 1 - (h / 2) * self.p(xi)
+            b[i] = (h ** 2) * self.r(xi)
+        
+        # Last row
+        A[N-1][N-2] = 1 + (h / 2) * self.p(self.b - h)
+        A[N-1][N-1] = -(2 + (h ** 2) * self.q(self.b - h))
+        b[N-1] = (h ** 2) * self.r(self.b - h) - (1 - (h / 2) * self.p(self.b - h)) * self.y1
+        
+        # Solve system of equations
+        sol = LinearSystem(A, b).solve()
+        
+        w = [self.y0] + sol.components + [self.y1]
+        
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 2)])
+        
 
 class SecondOrderODE_IVP(OrdinaryDifferentialEquation):
     """

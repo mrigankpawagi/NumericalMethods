@@ -43,6 +43,7 @@
     - Predictor-Corrector (with initial approximation from Runga-Kutta order-4, predictor as Adam-Bashforth order-4 and corrector as Adam-Moulton order-3)
 - Solving boundary value problems on one-dimensional second order linear ODEs
     - Shooting method
+    - Finite difference method
 - Solving initial value problems on one-dimensional second order ODEs
     - All methods from solving first order linear ODEs
 - Solving boundary value problems on one-dimensional second order ODEs
