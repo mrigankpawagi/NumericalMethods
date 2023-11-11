@@ -436,19 +436,72 @@ class Log(Function):
     def __init__(self, f: Function, base: float=math.e):
         self.function = lambda x: math.log(f(x), base)
         
-class BivariateFunction:
+class MultiVariableFunction:
 
     def __init__(self, function):
         self.function = function
         
-    def __call__(self, x=None, y=None):
-        if x is not None and y is not None:
-            return self.function(x, y)
-        if x is not None:
-            return Function(lambda z: self(x, z))
-        if y is not None:
-            return Function(lambda z: self(z, y))
-        raise ValueError("x or y must be defined.")
+    def __call__(self, *args):
+        unwrapped_args = []
+        for arg in args:
+            if isinstance(arg, Vector):
+                unwrapped_args += arg.components
+            else:
+                unwrapped_args.append(arg)
+        args = tuple(unwrapped_args)
+        
+        if all(arg is not None for arg in args):
+            return self.function(*args)
+        if all(arg is None for arg in args):
+            raise ValueError("At least one argument must be defined.")
+
+        def f(*z):
+            arguments = []
+            original_args = list(args)
+            passed_args = list(z)
+            for arg in original_args:
+                if arg is None:
+                    arguments.append(passed_args.pop(0))
+                else:
+                    arguments.append(arg)
+            return self(*arguments)
+        
+        num_none = sum(arg is None for arg in args)
+        if num_none == 1:
+            return Function(f)
+        return MultiVariableFunction(f)
+        
+class BivariateFunction(MultiVariableFunction):
+    pass
+
+class Vector:
+    
+    def __init__(self, *components):
+        self.components = components
+    
+    def __add__(self, other):
+        return Vector(*[self.components[i] + other.components[i] for i in range(len(self.components))])
+    
+    def __sub__(self, other):
+        return Vector(*[self.components[i] - other.components[i] for i in range(len(self.components))])
+    
+    def __rmul__(self, other):
+        return Vector(*[other * self.components[i] for i in range(len(self.components))])
+    
+    def __call__(self, *args):
+        return Vector(*[self.components[i](*args) for i in range(len(self.components))])
+    
+    def __getitem__(self, i):
+        return self.components[i]
+    
+    def __sizeof__(self) -> int:
+        return len(self.components)
+    
+    def __iter__(self):
+        return iter(self.components)
+    
+    def __str__(self):
+        return "<" + ", ".join(str(component) for component in self.components) + ">"
 
 class OrdinaryDifferentialEquation:
 
@@ -463,6 +516,7 @@ class LinearODE(OrdinaryDifferentialEquation):
 class FirstOrderLinearODE(LinearODE):
     """
     y'(x) = f(x, y(x))
+    These are initial value problems.
     """
 
     def __init__(self, f: BivariateFunction, a: float, b: float, y0: float):
@@ -518,8 +572,11 @@ class FirstOrderLinearODE(LinearODE):
         else:
             raise NotImplementedError("Not implemented for n > 4 yet.")
         
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
-    
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)
+
     def solve_taylor(self, h: float, n: int) -> Polynomial:
         w = [self.y0]
         N = int((self.b - self.a) / h)
@@ -536,7 +593,10 @@ class FirstOrderLinearODE(LinearODE):
         else:
             raise NotImplementedError("Not implemented for n > 2 yet.")
 
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
     def solve_trapezoidal(self, h: float) -> Polynomial:
         w = [self.y0]
@@ -546,7 +606,10 @@ class FirstOrderLinearODE(LinearODE):
             g = Function(lambda x: w[i] + (h/2) * (self.f(xi, w[i]) + self.f(xi + h, x)))
             w.append(g.fixed_point(w[i]))
             
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
     def solve_adam_bashforth(self, h: float, step: int, points: list[float]) -> Polynomial:
         w = [self.y0] + points
@@ -569,7 +632,10 @@ class FirstOrderLinearODE(LinearODE):
             else:
                 raise ValueError("Step must be greater than 1.")
         
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
     def solve_adam_moulton(self, h: float, step: int, points: list[float]) -> Polynomial:
         w = [self.y0] + points
@@ -595,7 +661,10 @@ class FirstOrderLinearODE(LinearODE):
             else:
                 raise ValueError("Step must be greater than 1.")
         
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
     def solve_predictor_corrector(self, h: float) -> Polynomial:
         w = [self.y0]
@@ -620,4 +689,119 @@ class FirstOrderLinearODE(LinearODE):
             
             w.append(correction)
             
-        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])           
+        try:
+            return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
+        except:
+            return w # return list of values if interpolation fails (like when w is a list of Vectors)      
+
+class SecondOrderLinearODE_BVP(LinearODE):
+    """
+    y''(x) = p(x)y'(x) + q(x)y(x) + r(x)
+    These are boundary value problems.
+    """
+
+    def __init__(self, p: Function, q: Function, r: Function, a: float, b: float, y0: float, y1: float):
+        self.p = p
+        self.q = q
+        self.r = r
+        self.a = a
+        self.b = b
+        self.y0 = y0 # y(a)
+        self.y1 = y1 # y(b)
+        
+    def solve(self, h: float = 0.1, method: Literal["shooting"]="shooting"):
+        if method == "shooting":
+            return self.solve_shooting(h)
+        raise ValueError("Invalid method.")
+    
+    def solve_shooting(self, h: float) -> Polynomial:
+        IVP1 = SecondOrderODE_IVP(
+            MultiVariableFunction(lambda t, u1, u2: self.p(t) * u2 + self.q(t) * u1 + self.r(t)),
+            self.a, self.b, self.y0, 0
+        )
+        IVP2 = SecondOrderODE_IVP(
+            MultiVariableFunction(lambda t, u1, u2: self.p(t) * u2 + self.q(t) * u1),
+            self.a, self.b, 0, 1
+        )
+        
+        sol1 = IVP1.solve(h)
+        sol2 = IVP2.solve(h)
+        
+        c = (self.y1 - sol1(self.b)) / sol2(self.b)
+        
+        return sol1 + c * sol2
+
+class SecondOrderODE_IVP(OrdinaryDifferentialEquation):
+    """
+    y''(x) = f(x, y(x), y'(x))
+    These are initial value problems.
+    """
+    
+    def __init__(self, f: MultiVariableFunction, a: float, b: float, y0: float, y1: float):
+        """
+        f is a function of x, y(x), and y'(x)
+        """
+        self.f = f
+        self.a = a
+        self.b = b
+        self.y0 = y0 # y(a)
+        self.y1 = y1 # y'(a)
+        
+    def solve(self, h: float = 0.1, method: Literal["euler", "runge-kutta", "taylor", "trapezoidal", "adam-bashforth", "adam-moulton", "predictor-corrector"]='euler', n: int = 1, step: int = 2, points: list[float]=[]):
+        U0 = Vector(self.y0, self.y1)
+        F =  Vector(
+            MultiVariableFunction(lambda t, u1, u2: u2),
+            MultiVariableFunction(lambda t, u1, u2: self.f(t, u1, u2))
+        )
+        IVP = FirstOrderLinearODE(F, self.a, self.b, U0)
+        sol = IVP.solve(h, method, n, step, points)
+        
+        w = [x[0] for x in sol]
+        return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(len(w))])
+
+class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
+    """
+    y''(x) = f(x, y(x), y'(x))
+    These are boundary value problems.
+    """
+    
+    def __init__(self, f: MultiVariableFunction, a: float, b: float, y0: float, y1: float):
+        """
+        f is a function of x, y(x), and y'(x)
+        """
+        self.f = f
+        self.a = a
+        self.b = b
+        self.y0 = y0 # y(a)
+        self.y1 = y1 # y(b)
+        
+    def solve(self, h: float = 0.1, method: Literal["shooting_newton"]="shooting_newton", M: int = 100, TOL: float = 1e-5):
+        if method == "shooting_newton":
+            return self.solve_shooting_newton(h, M, TOL)
+        raise ValueError("Invalid method.")
+    
+    def solve_shooting_newton(self, h: float, M, TOL) -> Polynomial:
+        t = 1 # initial guess for y'(a)
+        i = 0
+        
+        while i < M:
+            IVP1 = SecondOrderODE_IVP(
+                MultiVariableFunction(lambda t, u1, u2: self.f(t, u1, u2)),
+                self.a, self.b, self.y0, t
+            )
+            y = IVP1.solve(h)
+            
+            p = Function(lambda x: self.f(x, None, y.differentiate()(x)).differentiate()(y(x)))
+            q = Function(lambda x: self.f(x, y(x), None).differentiate()(y.differentiate()(x)))
+            r = Function(lambda x: 0)
+            IVP2 = SecondOrderLinearODE_BVP(p, q, r, self.a, self.b, 0, 1)
+            z = IVP2.solve(h)
+            
+            t0 = t - (y(self.b) - self.y1) / z(self.b)
+            if abs(t0 - t) < TOL:
+                return y
+            
+            t = t0            
+            i += 1
+        
+        return None

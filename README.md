@@ -17,7 +17,8 @@
     - Trapezoidal 
     - Simpson's
     - Gaussian Quadrature (n = 1, 2)
-- Support for bivariate functions
+- Support for multivariable functions
+- Support for vectors and vector-valued functions
 
 ### Methods
 - Root finding
@@ -31,7 +32,7 @@
     - Newton's divided difference
     - Forward difference
     - Backward difference
-- Solving initial value problems on one-dimensional first order linear ODEs
+- Solving initial value problems on one-dimensional first order linear ODEs (and systems of such ODEs)
     - Euler's method
     - Taylor's method (for n = 1, 2)
     - Runga Kutta (for n = 1, 2, 3, 4)
@@ -39,6 +40,13 @@
     - Adam-Bashforth (for n = 2, 3, 4)
     - Adam-Moulton (for n = 2, 3, 4)
     - Predictor-Corrector (with initial approximation from Runga-Kutta order-4, predictor as Adam-Bashforth order-4 and corrector as Adam-Moulton order-3)
+- Solving boundary value problems on one-dimensional second order linear ODEs
+    - Shooting method
+- Solving initial value problems on one-dimensional second order ODEs
+    - All methods from solving first order linear ODEs
+- Solving boundary value problems on one-dimensional second order ODEs
+    - Shooting method
+        - Newton method
 
 ### Utilities
 - Plotting (requires `matplotlib`)

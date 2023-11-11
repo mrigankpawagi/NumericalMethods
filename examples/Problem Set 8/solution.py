@@ -1,4 +1,4 @@
-from function import Function, Polynomial, Cos, Sin, Exponent, Log, FirstOrderLinearODE, BivariateFunction
+from function import Function, Polynomial, Cos, Sin, Exponent, Log, FirstOrderLinearODE, BivariateFunction, Vector, MultiVariableFunction
 from util import Util
 import math
 
@@ -169,26 +169,14 @@ class Solution:
         a = 0
         b = 1
         h = 0.2
-        U0 = [1, 1]
-        F = [
-            lambda t, u1, u2: 3*u1 + 2*u2 - (2*(t**2) + 1)*Exponent(Polynomial(0, 2))(t),
-            lambda t, u1, u2: 4*u1 + u2 + (t**2 + 2*t - 4)*Exponent(Polynomial(0, 2))(t)
-        ]
-        N = int((b-a)/h)
-        W = [U0]
+        U0 = Vector(1, 0)
+        F = Vector(
+            MultiVariableFunction(lambda t, u1, u2: 3*u1 + 2*u2 - (2*(t**2) + 1)*Exponent(Polynomial(0, 2))(t)),
+            MultiVariableFunction(lambda t, u1, u2: 4*u1 + u2 + (t**2 + 2*t - 4)*Exponent(Polynomial(0, 2))(t))
+        )
         
-        for i in range(N):
-            xi = a + i*h
-            W.append([
-                W[i][0] + (h/2) * (
-                        F[0](xi, *W[i]) + 
-                        F[0](xi + h, W[i][0] + h * F[0](xi, *W[i]), W[i][1] + h * F[1](xi, *W[i]))
-                    ),
-                W[i][1] + (h/2) * (
-                        F[1](xi, *W[i]) + 
-                        F[1](xi + h, W[i][0] + h * F[0](xi, *W[i]), W[i][1] + h * F[1](xi, *W[i]))
-                    )
-            ])
+        IVP = FirstOrderLinearODE(F, a, b, U0)
+        sol = IVP.solve(h, method='runge-kutta', n=2)
             
         GT = [
             (1/3) * Exponent(Polynomial(0, 5)) - (1/3) * Exponent(Polynomial(0, -1)) + Exponent(Polynomial(0, 2)),
@@ -197,11 +185,11 @@ class Solution:
             
         return {
             'u1': {
-                'result': W[-1][0],
-                'error': abs(GT[0](b) - W[-1][0])
+                'result': sol[-1][0],
+                'error': abs(GT[0](b) - sol[-1][0])
             },
             'u2': {
-                'result': W[-1][1],
-                'error': abs(GT[1](b) - W[-1][1])
+                'result': sol[-1][1],
+                'error': abs(GT[1](b) - sol[-1][1])
             }
         }
