@@ -477,7 +477,7 @@ class BivariateFunction(MultiVariableFunction):
 class Vector:
     
     def __init__(self, *components):
-        self.components = components
+        self.components = list(components)
     
     def __add__(self, other):
         return Vector(*[self.components[i] + other.components[i] for i in range(len(self.components))])
@@ -494,7 +494,10 @@ class Vector:
     def __getitem__(self, i):
         return self.components[i]
     
-    def __sizeof__(self) -> int:
+    def __setitem__(self, i, value):
+        self.components[i] = value
+    
+    def __len__(self) -> int:
         return len(self.components)
     
     def __iter__(self):
@@ -502,6 +505,32 @@ class Vector:
     
     def __str__(self):
         return "<" + ", ".join(str(component) for component in self.components) + ">"
+    
+class Matrix:
+        
+    def __init__(self, *rows: list[Vector]):
+        self.rows = list(rows)
+    
+    def __len__(self) -> int:
+        return len(self.rows)
+    
+    def __getitem__(self, i):
+        return self.rows[i]
+    
+    def __setitem__(self, i, value):
+        self.rows[i] = value
+    
+    def __iter__(self):
+        return iter(self.rows)
+    
+    def __add__(self, other):
+        return Matrix(*[self.rows[i] + other.rows[i] for i in range(len(self))])
+    
+    def __sub__(self, other):
+        return Matrix(*[self.rows[i] - other.rows[i] for i in range(len(self))])
+    
+    def __rmul__(self, other):
+        return Matrix(*[other * self.rows[i] for i in range(len(self))])
 
 class OrdinaryDifferentialEquation:
 
@@ -775,13 +804,13 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
         self.y0 = y0 # y(a)
         self.y1 = y1 # y(b)
         
-    def solve(self, h: float = 0.1, method: Literal["shooting_newton"]="shooting_newton", M: int = 100, TOL: float = 1e-5):
+    def solve(self, h: float = 0.1, method: Literal["shooting_newton"]="shooting_newton", M: int = 100, TOL: float = 1e-5, initial_approximation=None):
         if method == "shooting_newton":
-            return self.solve_shooting_newton(h, M, TOL)
+            return self.solve_shooting_newton(h, M, TOL, initial_approximation)
         raise ValueError("Invalid method.")
     
-    def solve_shooting_newton(self, h: float, M, TOL) -> Polynomial:
-        t = 1 # initial guess for y'(a)
+    def solve_shooting_newton(self, h: float, M, TOL, initial_approximation) -> Polynomial:
+        t = 1 if initial_approximation is None else initial_approximation # initial guess for y'(a)
         i = 0
         
         while i < M:
@@ -804,4 +833,94 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
             t = t0            
             i += 1
         
+        return None
+
+class LinearSystem:
+    """
+    A system of linear equations.
+    """
+    
+    def __init__(self, A: Matrix, b: Vector):
+        self.A = A
+        self.b = b
+        self.N = len(A)
+        
+        assert len(b) == self.N, "A and b must have the same number of rows."
+        
+    def solve(self, method: Literal["gauss_elimination", "gauss_jacobi", "gauss_seidel"]='gauss_elimination', TOL: float = 1e-5, initial_approximation: Vector = None, MAX_ITERATIONS: int = 100):
+        if method == "gauss_elimination":
+            return self.solve_gauss_elimination(TOL)
+        if method == "gauss_jacobi":
+            return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
+        if method == "gauss_seidel":
+            return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
+        raise ValueError("Invalid method.")
+    
+    def solve_gauss_elimination(self, TOL: float) -> Vector:
+        for i in range(self.N - 1):
+            # find pivot row
+            p = None
+            for j in range(i, self.N):
+                if abs(self.A[j][i]) > TOL:
+                    p = j
+                    break
+            if p is None:
+                raise ValueError("No unique solution exists.")
+            
+            if p != i:
+                # swap rows
+                self.A[i], self.A[p] = self.A[p], self.A[i]
+                self.b[i], self.b[p] = self.b[p], self.b[i]
+            
+            for j in range(i + 1, self.N):
+                m = self.A[j][i] / self.A[i][i]
+                self.A[j] = self.A[j] - m * self.A[i]
+                self.b[j] = self.b[j] - m * self.b[i]
+            
+        if abs(self.A[self.N - 1][self.N - 1]) < TOL:
+            raise ValueError("No unique solution exists.")
+        
+        x = [0] * self.N
+        x[self.N - 1] = self.b[self.N - 1] / self.A[self.N - 1][self.N - 1]
+        for i in range(self.N - 2, -1, -1):
+            x[i] = (self.b[i] - sum(self.A[i][j] * x[j] for j in range(i + 1, self.N))) / self.A[i][i]
+        
+        return Vector(*x)
+    
+    def solve_gauss_jacobi(self, TOL: float, initial_approximation: Vector, MAX_ITERATIONS) -> Vector:
+        assert initial_approximation is not None, "Initial approximation must be defined."
+        
+        x0 = initial_approximation
+        k = 0
+        
+        while k < MAX_ITERATIONS:
+            x1 = [0] * self.N
+            for i in range(self.N):
+                x1[i] = (self.b[i] - sum(self.A[i][j] * x0[j] for j in range(self.N) if j != i)) / self.A[i][i]
+            
+            if max(abs(x1[i] - x0[i]) for i in range(self.N)) / max(abs(x1[i]) for i in range(self.N)) < TOL:
+                return Vector(*x1)
+            
+            x0 = x1
+            k += 1
+            
+        return None
+    
+    def solve_gauss_seidel(self, TOL: float, initial_approximation: Vector, MAX_ITERATIONS) -> Vector:
+        assert initial_approximation is not None, "Initial approximation must be defined."
+        
+        x0 = initial_approximation
+        k = 0
+        
+        while k < MAX_ITERATIONS:
+            x1 = [0] * self.N
+            for i in range(self.N):
+                x1[i] = (self.b[i] - sum(self.A[i][j] * x1[j] for j in range(i-1)) - sum(self.A[i][j] * x0[j] for j in range(i, self.N))) / self.A[i][i]
+                
+            if max(abs(x1[i] - x0[i]) for i in range(self.N)) / max(abs(x1[i]) for i in range(self.N)) < TOL:
+                return Vector(*x1)
+            
+            x0 = x1
+            k += 1
+            
         return None

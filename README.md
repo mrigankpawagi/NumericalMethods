@@ -19,6 +19,7 @@
     - Gaussian Quadrature (n = 1, 2)
 - Support for multivariable functions
 - Support for vectors and vector-valued functions
+- Support for matrices (vector of vectors)
 
 ### Methods
 - Root finding
@@ -47,6 +48,10 @@
 - Solving boundary value problems on one-dimensional second order ODEs
     - Shooting method
         - Newton method
+- Solving systems of linear equations
+    - Gaussian elimination with backward substitution
+    - Gauss-Jacobi method
+    - Gauss-Seidel method
 
 ### Utilities
 - Plotting (requires `matplotlib`)
