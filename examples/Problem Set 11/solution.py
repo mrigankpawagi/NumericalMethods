@@ -30,7 +30,7 @@ class Solution:
         )
         b = Vector(8, 3, 11)
         system = LinearSystem(A, b)
-        return system.solve(method='gauss_elimination', TOL=1e-2)
+        return system.solve(method='gauss_elimination')
     
     @staticmethod
     def problem2():

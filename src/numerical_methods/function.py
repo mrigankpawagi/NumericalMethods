@@ -882,19 +882,19 @@ class LinearSystem:
         
     def solve(self, method: Literal["gauss_elimination", "gauss_jacobi", "gauss_seidel"]='gauss_elimination', TOL: float = 1e-5, initial_approximation: Vector = None, MAX_ITERATIONS: int = 100):
         if method == "gauss_elimination":
-            return self.solve_gauss_elimination(TOL)
+            return self.solve_gauss_elimination()
         if method == "gauss_jacobi":
             return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
         if method == "gauss_seidel":
             return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
         raise ValueError("Invalid method.")
     
-    def solve_gauss_elimination(self, TOL: float) -> Vector:
+    def solve_gauss_elimination(self) -> Vector:
         for i in range(self.N - 1):
             # find pivot row
             p = None
             for j in range(i, self.N):
-                if abs(self.A[j][i]) > TOL:
+                if abs(self.A[j][i]) != 0:
                     p = j
                     break
             if p is None:
@@ -910,7 +910,7 @@ class LinearSystem:
                 self.A[j] = self.A[j] - m * self.A[i]
                 self.b[j] = self.b[j] - m * self.b[i]
             
-        if abs(self.A[self.N - 1][self.N - 1]) < TOL:
+        if abs(self.A[self.N - 1][self.N - 1]) == 0:
             raise ValueError("No unique solution exists.")
         
         x = [0] * self.N
