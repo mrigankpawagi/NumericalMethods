@@ -774,7 +774,7 @@ class SecondOrderLinearODE_BVP(LinearODE):
         
         # Middle rows
         for i in range(1, N - 1):
-            xi = self.a + i * h
+            xi = self.a + (i+1) * h
             A[i][i-1] = 1 + (h / 2) * self.p(xi)
             A[i][i] = -(2 + (h ** 2) * self.q(xi))
             A[i][i+1] = 1 - (h / 2) * self.p(xi)
