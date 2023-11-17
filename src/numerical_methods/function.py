@@ -886,7 +886,7 @@ class LinearSystem:
         if method == "gauss_jacobi":
             return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
         if method == "gauss_seidel":
-            return self.solve_gauss_jacobi(TOL, initial_approximation, MAX_ITERATIONS)
+            return self.solve_gauss_seidel(TOL, initial_approximation, MAX_ITERATIONS)
         raise ValueError("Invalid method.")
     
     def solve_gauss_elimination(self) -> Vector:
@@ -948,7 +948,7 @@ class LinearSystem:
         while k < MAX_ITERATIONS:
             x1 = [0] * self.N
             for i in range(self.N):
-                x1[i] = (self.b[i] - sum(self.A[i][j] * x1[j] for j in range(i-1)) - sum(self.A[i][j] * x0[j] for j in range(i, self.N))) / self.A[i][i]
+                x1[i] = (self.b[i] - sum(self.A[i][j] * x1[j] for j in range(i)) - sum(self.A[i][j] * x0[j] for j in range(i+1, self.N))) / self.A[i][i]
                 
             if max(abs(x1[i] - x0[i]) for i in range(self.N)) / max(abs(x1[i]) for i in range(self.N)) < TOL:
                 return Vector(*x1)
