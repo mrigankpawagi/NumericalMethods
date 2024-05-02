@@ -1,6 +1,6 @@
 # Numerical Methods and Functions Library
 
-## Created during UMC 202 at the Indian Institute of Science, Bengaluru
+**Created during UMC 202 at the Indian Institute of Science, Bengaluru**
 
 ### Functions
 - Support for polynomials
