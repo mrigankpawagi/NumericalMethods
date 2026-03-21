@@ -1052,7 +1052,7 @@ class TestProblemSet9(unittest.TestCase):
         h = (b - a) / (N + 1)
         f = MultiVariableFunction(lambda x, y, z: (1 / 8) * (32 + 2 * x ** 3 - y * z))
         BVP = SecondOrderODE_BVP(f, a, b, y0=17, y1=43 / 3)
-        sol = BVP.solve(h, method='shooting_newton', M=100, TOL=1e-5)
+        sol = BVP.solve(h, method='shooting_newton', M=100, tol=1e-5)
         GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
 
         expected_sol = [
@@ -1334,7 +1334,7 @@ class TestProblemSet12(unittest.TestCase):
         h = (b - a) / (N + 1)
         f = MultiVariableFunction(lambda x, y, z: (1 / 8) * (32 + 2 * x ** 3 - y * z))
         BVP = SecondOrderODE_BVP(f, a, b, y0=17, y1=43 / 3)
-        sol = BVP.solve(h, method='finite_difference', M=100, TOL=1e-5)
+        sol = BVP.solve(h, method='finite_difference', M=100, tol=1e-5)
         GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
 
         for i in range(N + 2):

@@ -222,7 +222,7 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
         h: float = 0.1,
         method: NonlinearBVPMethod | str = NonlinearBVPMethod.SHOOTING_NEWTON,
         M: int = 100,
-        TOL: float = 1e-5,
+        tol: float = 1e-5,
         initial_approximation=None,
     ) -> Polynomial | None:
         """Solve the nonlinear BVP and return an interpolating :class:`Polynomial`.
@@ -235,7 +235,7 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
             Algorithm: ``"shooting_newton"`` or ``"finite_difference"``.
         M:
             Maximum number of outer iterations.
-        TOL:
+        tol:
             Convergence tolerance.
         initial_approximation:
             Initial guess for :math:`y'(a)` (shooting) or interior node values
@@ -244,9 +244,9 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
         method = NonlinearBVPMethod(method)
 
         if method is NonlinearBVPMethod.SHOOTING_NEWTON:
-            return self._solve_shooting_newton(h, M, TOL, initial_approximation)
+            return self._solve_shooting_newton(h, M, tol, initial_approximation)
         if method is NonlinearBVPMethod.FINITE_DIFFERENCE:
-            return self._solve_finite_difference(h, M, TOL)
+            return self._solve_finite_difference(h, M, tol)
 
         raise ValueError(f"Unknown nonlinear BVP method: {method!r}")
 
