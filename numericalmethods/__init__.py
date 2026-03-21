@@ -7,6 +7,7 @@ from .function import (
     SecondOrderLinearODE_BVP,
     SecondOrderODE_IVP, SecondOrderODE_BVP,
     LinearSystem,
+    FEM2D,
 )
 from .util import Util
 
@@ -19,5 +20,6 @@ __all__ = [
     "SecondOrderLinearODE_BVP",
     "SecondOrderODE_IVP", "SecondOrderODE_BVP",
     "LinearSystem",
+    "FEM2D",
     "Util",
 ]

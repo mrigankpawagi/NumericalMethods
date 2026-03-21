@@ -47,6 +47,13 @@ Developed as part of UMC 202 at the Indian Institute of Science, Bengaluru.
 - Gauss-Jacobi iteration
 - Gauss-Seidel iteration
 
+### Finite Element Method (2D)
+`FEM2D(f, g, xa, xb, ya, yb).solve(nx, ny)` solves the 2D Poisson equation on a rectangular domain using linear triangular elements:
+
+- **Problem**: −Δu(x,y) = f(x,y) on Ω = [xa,xb]×[ya,yb], u = g on ∂Ω
+- **Method**: uniform triangular mesh, P1 (linear) elements, Gauss elimination for the assembled system
+- Returns a `BivariateFunction` approximating u(x,y)
+
 ## Usage
 
 ```python
