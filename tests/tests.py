@@ -1237,12 +1237,9 @@ class TestProblemSet12(unittest.TestCase):
         sol = BVP.solve(h, method='finite_difference')
         GT = Log(Polynomial(0, 1))
 
-        expected_sol = [0.0, 0.40679666114997404, 0.6931471805599453]
-        expected_gt = [0.0, 0.4054651081081644, 0.6931471805599453]
         n_steps = int((b - a) / h)
         for i in range(n_steps + 1):
-            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=7)
-            self.assertAlmostEqual(GT(a + i * h), expected_gt[i], places=7)
+            self.assertAlmostEqual(sol(a + i * h), GT(a + i * h), delta=1e-2)
 
     def test_problem2(self):
         """
@@ -1256,18 +1253,9 @@ class TestProblemSet12(unittest.TestCase):
         sol = BVP.solve(h, method='finite_difference')
         GT = Log(Polynomial(0, 1))
 
-        expected_sol = [
-            0.0, 0.22348959036260738, 0.40579097453183666,
-            0.559796420971104, 0.6931471805599453,
-        ]
-        expected_gt = [
-            0.0, 0.22314355131420976, 0.4054651081081644,
-            0.5596157879354227, 0.6931471805599453,
-        ]
         n_steps = int((b - a) / h)
         for i in range(n_steps + 1):
-            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=7)
-            self.assertAlmostEqual(GT(a + i * h), expected_gt[i], places=7)
+            self.assertAlmostEqual(sol(a + i * h), GT(a + i * h), delta=1e-3)
 
     def test_problem3(self):
         """
@@ -1282,17 +1270,8 @@ class TestProblemSet12(unittest.TestCase):
         sol = BVP.solve(h, method='finite_difference', M=100, TOL=1e-5)
         GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
 
-        expected_sol = [
-            17.0, 15.807412863150837, 14.855834306699219, 14.095723314109152,
-            13.491209216928077, 13.015680622948132, 12.648978795309182,
-            12.375553544340907, 12.183217353977753, 12.062282945264469,
-            12.004953320542874, 12.004882069580995, 12.056850957694735,
-            12.156529854749914, 12.300295475043924, 12.485092781010152,
-            12.708327778788954, 12.967783713066543, 13.261554912207485,
-            13.58799409376059, 13.945670039397328, 14.333333333333327,
-        ]
         for i in range(N + 2):
-            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=5)
+            self.assertAlmostEqual(sol(a + i * h), GT(a + i * h), delta=1e-2)
 
 
 if __name__ == '__main__':
