@@ -1,3 +1,4 @@
+from fractions import Fraction
 from typing import Literal, Callable
 import math
 
@@ -640,26 +641,67 @@ class FirstOrderLinearODE(LinearODE):
         except:
             return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
+    @staticmethod
+    def _adams_bashforth_coefficients(k: int) -> list:
+        """
+        Compute Adams-Bashforth k-step coefficients via Lagrange interpolation.
+        Returns [b_0, ..., b_{k-1}] (as Fractions) such that
+        w_{n+1} = w_n + h * sum_{j=0}^{k-1} b_j * f(t_{n-j}, w_{n-j}).
+        """
+        nodes = [Fraction(-j) for j in range(k)]
+        coefficients = []
+        for m in range(k):
+            poly = [Fraction(1)]
+            for j in range(k):
+                if j != m:
+                    new_poly = [Fraction(0)] * (len(poly) + 1)
+                    for i, c in enumerate(poly):
+                        new_poly[i + 1] += c
+                        new_poly[i] -= nodes[j] * c
+                    poly = new_poly
+            denom = Fraction(1)
+            for j in range(k):
+                if j != m:
+                    denom *= (nodes[m] - nodes[j])
+            integral = sum(c / (i + 1) for i, c in enumerate(poly))
+            coefficients.append(integral / denom)
+        return coefficients
+
+    @staticmethod
+    def _adams_moulton_coefficients(k: int) -> list:
+        """
+        Compute Adams-Moulton k-step coefficients via Lagrange interpolation.
+        Returns [b_0, ..., b_k] (as Fractions) such that
+        w_{n+1} = w_n + h * (b_0 * f(t_{n+1}, w_{n+1}) + sum_{j=1}^{k} b_j * f(t_{n+1-j}, w_{n+1-j})).
+        """
+        nodes = [Fraction(1 - j) for j in range(k + 1)]
+        coefficients = []
+        for m in range(k + 1):
+            poly = [Fraction(1)]
+            for j in range(k + 1):
+                if j != m:
+                    new_poly = [Fraction(0)] * (len(poly) + 1)
+                    for i, c in enumerate(poly):
+                        new_poly[i + 1] += c
+                        new_poly[i] -= nodes[j] * c
+                    poly = new_poly
+            denom = Fraction(1)
+            for j in range(k + 1):
+                if j != m:
+                    denom *= (nodes[m] - nodes[j])
+            integral = sum(c / (i + 1) for i, c in enumerate(poly))
+            coefficients.append(integral / denom)
+        return coefficients
+
     def solve_adam_bashforth(self, h: float, step: int, points: list[float]) -> Polynomial:
+        if step < 2:
+            raise ValueError("Step must be at least 2.")
         w = [self.y0] + points
         N = int((self.b - self.a) / h)
-        if step == 2:
-            for i in range(1, N):
-                xi = self.a + i * h
-                w.append(w[i] + (h/2) * (3 * self.f(xi, w[i]) - self.f(xi - h, w[i-1])))
-        elif step == 3:
-            for i in range(2, N):
-                xi = self.a + i * h
-                w.append(w[i] + (h/12) * (23 * self.f(xi, w[i]) - 16 * self.f(xi - h, w[i-1]) + 5 * self.f(xi - 2 * h, w[i-2])))
-        elif step == 4:
-            for i in range(3, N):
-                xi = self.a + i * h
-                w.append(w[i] + (h/24) * (55 * self.f(xi, w[i]) - 59 * self.f(xi - h, w[i-1]) + 37 * self.f(xi - 2 * h, w[i-2]) - 9 * self.f(xi - 3 * h, w[i-3])))
-        else:
-            if step > 1:
-                raise NotImplementedError("Not implemented for step > 4 yet.")
-            else:
-                raise ValueError("Step must be greater than 1.")
+        coeffs = [float(c) for c in FirstOrderLinearODE._adams_bashforth_coefficients(step)]
+        for i in range(step - 1, N):
+            xi = self.a + i * h
+            w.append(w[i] + h * sum(coeffs[j] * self.f(xi - j * h, w[i - j]) for j in range(step)))
         
         try:
             return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])
@@ -667,28 +709,17 @@ class FirstOrderLinearODE(LinearODE):
             return w # return list of values if interpolation fails (like when w is a list of Vectors)
     
     def solve_adam_moulton(self, h: float, step: int, points: list[float]) -> Polynomial:
+        if step < 2:
+            raise ValueError("Step must be at least 2.")
         w = [self.y0] + points
         N = int((self.b - self.a) / h)
-        if step == 2:
-            for i in range(1, N):
-                xi = self.a + i * h
-                g = Function(lambda x: w[i] + (h/12) * (5 * self.f(xi + h, x) + 8 * self.f(xi, w[i]) - self.f(xi - h, w[i-1])))
-                w.append(g.fixed_point(w[i]))
-        elif step == 3:
-            for i in range(2, N):
-                xi = self.a + i * h
-                g = Function(lambda x: w[i] + (h/24) * (9 * self.f(xi + h, x) + 19 * self.f(xi, w[i]) - 5 * self.f(xi - h, w[i-1]) + self.f(xi - 2 * h, w[i-2])))
-                w.append(g.fixed_point(w[i]))
-        elif step == 4:
-            for i in range(3, N):
-                xi = self.a + i * h
-                g = Function(lambda x: w[i] + (h/720) * (251 * self.f(xi + h, x) + 646 * self.f(xi, w[i]) - 264 * self.f(xi - h, w[i-1]) + 106 * self.f(xi - 2 * h, w[i-2]) - 19 * self.f(xi - 3 * h, w[i-3])))
-                w.append(g.fixed_point(w[i]))
-        else:
-            if step > 1:
-                raise NotImplementedError("Not implemented for step > 4 yet.")
-            else:
-                raise ValueError("Step must be greater than 1.")
+        coeffs = [float(c) for c in FirstOrderLinearODE._adams_moulton_coefficients(step)]
+        for i in range(step - 1, N):
+            xi = self.a + i * h
+            explicit = sum(coeffs[j] * self.f(xi - (j - 1) * h, w[i - j + 1]) for j in range(1, step + 1))
+            c0 = coeffs[0]
+            g = Function(lambda x, _h=h, _xi=xi, _c0=c0, _explicit=explicit, _wi=w[i]: _wi + _h * (_c0 * self.f(_xi + _h, x) + _explicit))
+            w.append(g.fixed_point(w[i]))
         
         try:
             return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 1)])

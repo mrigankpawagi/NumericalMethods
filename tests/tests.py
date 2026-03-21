@@ -906,6 +906,58 @@ class TestProblemSet8(unittest.TestCase):
         self.assertAlmostEqual(sol[-1][0], 3.771001932367687, places=7)
         self.assertAlmostEqual(sol[-1][1], 4.121818316204175, places=7)
 
+    def test_problem6(self):
+        """
+        Redo Problem 1 using the five-step Adams-Bashforth and five-step
+        Adams-Moulton methods (tests the n-step generalization for n > 4).
+        (a) y' = t e^{3t} - 2y, y(0) = 0, h = 0.2
+        (b) y' = 1 + (t - y)^2, y(2) = 1, h = 0.2
+        (c) y' = 1 + y/t, y(1) = 2, h = 0.2
+        """
+        gt_a = self._gt_a()
+        gt_b = Polynomial(0, 1) + 1 / Polynomial(1, -1)
+        gt_c = Polynomial(0, 1) * Log(Polynomial(0, 1)) + Polynomial(0, 2)
+
+        # Five-step Adams-Bashforth
+        sol_ab_a = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
+            0, 1, 0
+        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
+
+        sol_ab_b = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
+            2, 3, 1
+        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
+
+        sol_ab_c = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: 1 + y / t),
+            1, 2, 2
+        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
+
+        self.assertAlmostEqual(sol_ab_a, 3.185400192276253, places=7)
+        self.assertAlmostEqual(sol_ab_b, 2.501140638997369, places=7)
+        self.assertAlmostEqual(sol_ab_c, 5.386217688517385, places=7)
+
+        # Five-step Adams-Moulton
+        sol_am_a = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
+            0, 1, 0
+        ).solve(0.2, method='adam-moulton', step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
+
+        sol_am_b = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
+            2, 3, 1
+        ).solve(0.2, method='adam-moulton', step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
+
+        sol_am_c = FirstOrderLinearODE(
+            BivariateFunction(lambda t, y: 1 + y / t),
+            1, 2, 2
+        ).solve(0.2, method='adam-moulton', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
+
+        self.assertAlmostEqual(sol_am_a, 3.220204867121768, places=7)
+        self.assertAlmostEqual(sol_am_b, 2.500031612866859, places=7)
+        self.assertAlmostEqual(sol_am_c, 5.386292515980048, places=7)
+
 
 class TestProblemSet9(unittest.TestCase):
     """Tests for Problem Set 9 - Second-Order BVP: Shooting Methods"""
