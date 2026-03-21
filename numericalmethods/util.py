@@ -1,4 +1,4 @@
-from function import Function, Polynomial
+from .function import Function, Polynomial
 import math
 
 

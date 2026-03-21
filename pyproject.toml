@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "numericalmethods"
+version = "0.1.0"
+description = "A Python library of numerical methods for root finding, interpolation, integration, ODEs, and linear systems"
+readme = "README.md"
+requires-python = ">=3.10"

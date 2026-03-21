@@ -1,18 +1,14 @@
 import unittest
 import math
-import sys
-import os
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from function import (
+from numericalmethods import (
     Function, Polynomial, Exponent, Sin, Cos, Tan, Log,
     BivariateFunction, MultiVariableFunction,
     FirstOrderLinearODE,
     SecondOrderLinearODE_BVP, SecondOrderODE_BVP,
     Vector, Matrix, LinearSystem,
+    Util,
 )
-from util import Util
 
 
 class TestProblemSet1(unittest.TestCase):
