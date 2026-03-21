@@ -8,6 +8,15 @@ from numericalmethods import (
     SecondOrderLinearODE_BVP, SecondOrderODE_BVP,
     Vector, Matrix, LinearSystem,
     Util,
+    DifferentiationMethod,
+    IntegrationMethod,
+    RootFindingMethod,
+    InterpolationMethod,
+    InterpolationForm,
+    ODEMethod,
+    BVPMethod,
+    NonlinearBVPMethod,
+    LinearSolverMethod,
 )
 
 
@@ -1215,7 +1224,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(6, 25, -11, 15)
         result = LinearSystem(A, b).solve(
-            method='gauss_jacobi', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method='gauss_jacobi', tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], 0.9996741452148707, places=3)
         self.assertAlmostEqual(result[1], 2.0004476715450092, places=3)
@@ -1234,7 +1243,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(6, 25, -11, 15)
         result = LinearSystem(A, b).solve(
-            method='gauss_seidel', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method='gauss_seidel', tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], 1.000091280285995, places=3)
         self.assertAlmostEqual(result[1], 2.000021342246459, places=3)
@@ -1252,7 +1261,7 @@ class TestProblemSet11(unittest.TestCase):
         A = Matrix(Vector(1, 2, 3), Vector(2, -1, 2), Vector(3, 1, -2))
         b = Vector(5, 1, -1)
         result = LinearSystem(A, b).solve(
-            method='gauss_jacobi', TOL=1e-3, initial_approximation=Vector(0, 0, 0)
+            method='gauss_jacobi', tol=1e-3, initial_approximation=Vector(0, 0, 0)
         )
         self.assertIsNone(result)
 
@@ -1272,7 +1281,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(3, -2, 5, 4)
         result = LinearSystem(A, b).solve(
-            method='gauss_seidel', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method='gauss_seidel', tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], -0.46691045573724593, places=3)
         self.assertAlmostEqual(result[1], -0.8083614774349144, places=3)
