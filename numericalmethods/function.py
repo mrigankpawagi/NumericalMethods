@@ -374,7 +374,7 @@ class Polynomial(Function):
         """
             data is a tuple of (x, y) tuples
         """
-        from util import Util
+        from .util import Util
         data = sorted(data, key=lambda x: x[0])
         diffs = sorted([data[i+1][0] - data[i][0] for i in range(len(data) - 1)])
         for j in range(len(diffs) - 1):
@@ -395,7 +395,7 @@ class Polynomial(Function):
         """
             data is a tuple of (x, y) tuples
         """
-        from util import Util
+        from .util import Util
         data = sorted(data, key=lambda x: x[0])
         diffs = sorted([data[i+1][0] - data[i][0] for i in range(len(data) - 1)])
         for j in range(len(diffs) - 1):
