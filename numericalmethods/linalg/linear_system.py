@@ -26,7 +26,7 @@ class LinearSystem:
 
     def solve(
         self,
-        method: LinearSolverMethod | str = LinearSolverMethod.GAUSS_ELIMINATION,
+        method: LinearSolverMethod = LinearSolverMethod.GAUSS_ELIMINATION,
         tol: float = 1e-5,
         initial_approximation: Vector | None = None,
         max_iterations: int = 100,
@@ -36,9 +36,7 @@ class LinearSystem:
         Parameters
         ----------
         method:
-            Solver algorithm to use.  Accepts :class:`LinearSolverMethod` enum
-            values or their string equivalents (``"gauss_elimination"``,
-            ``"gauss_jacobi"``, ``"gauss_seidel"``).
+            Solver algorithm to use (:class:`LinearSolverMethod`).
         tol:
             Convergence tolerance for iterative solvers.
         initial_approximation:
@@ -46,8 +44,6 @@ class LinearSystem:
         max_iterations:
             Maximum number of iterations for iterative solvers.
         """
-        method = LinearSolverMethod(method)
-
         if method is LinearSolverMethod.GAUSS_ELIMINATION:
             return self._gauss_elimination()
         if method is LinearSolverMethod.GAUSS_JACOBI:

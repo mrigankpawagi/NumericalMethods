@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class DifferentiationMethod(str, Enum):
+class DifferentiationMethod(Enum):
     """Numerical differentiation method."""
 
     FORWARD = "forward"
@@ -9,7 +9,7 @@ class DifferentiationMethod(str, Enum):
     CENTRAL = "central"
 
 
-class IntegrationMethod(str, Enum):
+class IntegrationMethod(Enum):
     """Numerical integration (quadrature) method."""
 
     RECTANGULAR = "rectangular"
@@ -19,7 +19,7 @@ class IntegrationMethod(str, Enum):
     GAUSS = "gauss"
 
 
-class RootFindingMethod(str, Enum):
+class RootFindingMethod(Enum):
     """Root-finding method for scalar equations."""
 
     BISECTION = "bisection"
@@ -29,14 +29,14 @@ class RootFindingMethod(str, Enum):
     REGULA_FALSI = "regula_falsi"
 
 
-class InterpolationMethod(str, Enum):
+class InterpolationMethod(Enum):
     """Polynomial interpolation method."""
 
     LAGRANGE = "lagrange"
     NEWTON = "newton"
 
 
-class InterpolationForm(str, Enum):
+class InterpolationForm(Enum):
     """Form of Newton interpolating polynomial."""
 
     STANDARD = "standard"
@@ -44,7 +44,7 @@ class InterpolationForm(str, Enum):
     BACKWARD_DIFF = "backward_diff"
 
 
-class ODEMethod(str, Enum):
+class ODEMethod(Enum):
     """Numerical solver for first-order ODE initial value problems."""
 
     EULER = "euler"
@@ -56,21 +56,21 @@ class ODEMethod(str, Enum):
     PREDICTOR_CORRECTOR = "predictor-corrector"
 
 
-class BVPMethod(str, Enum):
+class BVPMethod(Enum):
     """Solver for second-order linear boundary value problems."""
 
     SHOOTING = "shooting"
     FINITE_DIFFERENCE = "finite_difference"
 
 
-class NonlinearBVPMethod(str, Enum):
+class NonlinearBVPMethod(Enum):
     """Solver for second-order nonlinear boundary value problems."""
 
     SHOOTING_NEWTON = "shooting_newton"
     FINITE_DIFFERENCE = "finite_difference"
 
 
-class LinearSolverMethod(str, Enum):
+class LinearSolverMethod(Enum):
     """Solver for systems of linear equations."""
 
     GAUSS_ELIMINATION = "gauss_elimination"

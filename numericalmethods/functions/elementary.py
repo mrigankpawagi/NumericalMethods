@@ -26,9 +26,9 @@ class Polynomial(Function):
     @staticmethod
     def interpolate(
         data: list[tuple[float, float]] | list[float],
-        method: InterpolationMethod | str = InterpolationMethod.NEWTON,
+        method: InterpolationMethod = InterpolationMethod.NEWTON,
         f: Function | None = None,
-        form: InterpolationForm | str = InterpolationForm.STANDARD,
+        form: InterpolationForm = InterpolationForm.STANDARD,
     ) -> Polynomial:
         """Construct an interpolating polynomial.
 
@@ -38,19 +38,16 @@ class Polynomial(Function):
             Either a list of ``(x, y)`` tuples, **or** a list of *x* values
             when *f* is provided.
         method:
-            Interpolation algorithm: ``"lagrange"`` or ``"newton"``.
+            Interpolation algorithm (:class:`InterpolationMethod`).
         f:
             If provided, evaluates *f* at each *x* in *data* to build the
             ``(x, y)`` pairs.
         form:
-            Newton form variant: ``"standard"`` (divided differences),
-            ``"forward_diff"``, or ``"backward_diff"``.
+            Newton form variant (:class:`InterpolationForm`): ``STANDARD``
+            (divided differences), ``FORWARD_DIFF``, or ``BACKWARD_DIFF``.
         """
         if f is not None:
             data = [(x, f(x)) for x in data]
-
-        method = InterpolationMethod(method)
-        form = InterpolationForm(form)
 
         if method is InterpolationMethod.LAGRANGE:
             return Polynomial._interpolate_lagrange(data)

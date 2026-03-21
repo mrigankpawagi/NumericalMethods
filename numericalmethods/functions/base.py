@@ -85,7 +85,7 @@ class Function:
         self,
         func: Function | Callable | None = None,
         h: float = 1e-5,
-        method: DifferentiationMethod | str = DifferentiationMethod.FORWARD,
+        method: DifferentiationMethod = DifferentiationMethod.FORWARD,
     ) -> Function | None:
         """Return a numerical derivative, or set an exact derivative.
 
@@ -101,7 +101,8 @@ class Function:
         h:
             Step size for finite-difference approximation.
         method:
-            Finite-difference scheme: ``FORWARD``, ``BACKWARD``, or ``CENTRAL``.
+            Finite-difference scheme: ``DifferentiationMethod.FORWARD``,
+            ``BACKWARD``, or ``CENTRAL``.
         """
         if isinstance(func, Function):
             self.derivative = func
@@ -110,7 +111,6 @@ class Function:
             self.derivative = Function(func)
             return None
 
-        method = DifferentiationMethod(method)
         if method is DifferentiationMethod.FORWARD:
             return self._differentiate_forward(h)
         if method is DifferentiationMethod.BACKWARD:
@@ -130,7 +130,7 @@ class Function:
         self,
         n: int,
         h: float = 1e-5,
-        method: DifferentiationMethod | str = DifferentiationMethod.FORWARD,
+        method: DifferentiationMethod = DifferentiationMethod.FORWARD,
     ) -> Function:
         """Return the *n*-th order derivative via repeated finite differences.
 
@@ -171,7 +171,7 @@ class Function:
         self,
         a: float,
         b: float,
-        method: IntegrationMethod | str | None = None,
+        method: IntegrationMethod | None = None,
         n: int | None = None,
     ) -> float:
         """Compute the definite integral :math:`\\int_a^b f(x)\\,dx`.
@@ -181,16 +181,12 @@ class Function:
         a, b:
             Integration bounds.
         method:
-            Quadrature rule.  Accepts :class:`IntegrationMethod` values or
-            strings: ``"rectangular"``, ``"midpoint"``, ``"trapezoidal"``,
-            ``"simpson"``, ``"gauss"``.  If ``None`` and an exact antiderivative
-            has been set via :meth:`integral`, it is used instead.
+            Quadrature rule (:class:`IntegrationMethod`).  If ``None`` and an
+            exact antiderivative has been set via :meth:`integral`, it is used
+            instead.
         n:
             Number of subintervals (or quadrature points for Gauss).
         """
-        if method is not None:
-            method = IntegrationMethod(method)
-
         if method is IntegrationMethod.RECTANGULAR:
             return self._integrate_rectangular(a, b, n)
         if method is IntegrationMethod.MIDPOINT:
@@ -259,7 +255,7 @@ class Function:
 
     def root(
         self,
-        method: RootFindingMethod | str,
+        method: RootFindingMethod,
         a: float | None = None,
         b: float | None = None,
         p0: float | None = None,
@@ -274,9 +270,7 @@ class Function:
         Parameters
         ----------
         method:
-            Algorithm to use.  Accepts :class:`RootFindingMethod` values or
-            strings: ``"bisection"``, ``"newton"``, ``"modified_newton"``,
-            ``"secant"``, ``"regula_falsi"``.
+            Algorithm to use (:class:`RootFindingMethod`).
         a, b:
             Bracket for bisection (both required).
         p0, p1:
@@ -291,8 +285,6 @@ class Function:
             Stop after this many iterations regardless of convergence (useful for
             computing the *k*-th iterate explicitly).
         """
-        method = RootFindingMethod(method)
-
         if method is RootFindingMethod.BISECTION:
             if a is None or b is None:
                 raise ValueError("Bisection requires both a and b.")
