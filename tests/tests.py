@@ -910,9 +910,9 @@ class TestProblemSet8(unittest.TestCase):
         """
         Redo Problem 1 using the five-step Adams-Bashforth and five-step
         Adams-Moulton methods (tests the n-step generalization for n > 4).
-        (a) y' = t e^{3t} - 2y, y(0) = 0, h = 0.2
-        (b) y' = 1 + (t - y)^2, y(2) = 1, h = 0.2
-        (c) y' = 1 + y/t, y(1) = 2, h = 0.2
+        (a) y' = t e^{3t} - 2y, y(0) = 0, h = 0.2. Exact: y = (t/5 - 1/25)e^{3t} + (1/25)e^{-2t}.
+        (b) y' = 1 + (t - y)^2, y(2) = 1, h = 0.2. Exact: y = t + 1/(1 - t).
+        (c) y' = 1 + y/t, y(1) = 2, h = 0.2. Exact: y = t ln(t) + 2t.
         """
         gt_a = self._gt_a()
         gt_b = Polynomial(0, 1) + 1 / Polynomial(1, -1)
@@ -935,8 +935,11 @@ class TestProblemSet8(unittest.TestCase):
         ).solve(0.2, method='adam-bashforth', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
 
         self.assertAlmostEqual(sol_ab_a, 3.185400192276253, places=7)
+        self.assertAlmostEqual(abs(gt_a(1) - sol_ab_a), 0.03369912676323761, places=5)
         self.assertAlmostEqual(sol_ab_b, 2.501140638997369, places=7)
-        self.assertAlmostEqual(sol_ab_c, 5.386217688517385, places=7)
+        self.assertAlmostEqual(abs(gt_b(3) - sol_ab_b), 0.0011406389973691589, places=5)
+        self.assertAlmostEqual(sol_ab_c, 5.386217688517386, places=7)
+        self.assertAlmostEqual(abs(gt_c(2) - sol_ab_c), 7.667260250521224e-05, places=7)
 
         # Five-step Adams-Moulton
         sol_am_a = FirstOrderLinearODE(
@@ -954,9 +957,12 @@ class TestProblemSet8(unittest.TestCase):
             1, 2, 2
         ).solve(0.2, method='adam-moulton', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
 
-        self.assertAlmostEqual(sol_am_a, 3.220204867121768, places=7)
-        self.assertAlmostEqual(sol_am_b, 2.500031612866859, places=7)
-        self.assertAlmostEqual(sol_am_c, 5.386292515980048, places=7)
+        self.assertAlmostEqual(sol_am_a, 3.2202048442288973, places=7)
+        self.assertAlmostEqual(abs(gt_a(1) - sol_am_a), 0.001105525189406542, places=5)
+        self.assertAlmostEqual(sol_am_b, 2.5000316387876476, places=7)
+        self.assertAlmostEqual(abs(gt_b(3) - sol_am_b), 3.1638787647558786e-05, places=7)
+        self.assertAlmostEqual(sol_am_c, 5.38629254442049, places=7)
+        self.assertAlmostEqual(abs(gt_c(2) - sol_am_c), 1.8166994006918458e-06, places=9)
 
 
 class TestProblemSet9(unittest.TestCase):
