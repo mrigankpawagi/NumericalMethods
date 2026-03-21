@@ -837,9 +837,11 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
         self.y0 = y0 # y(a)
         self.y1 = y1 # y(b)
         
-    def solve(self, h: float = 0.1, method: Literal["shooting_newton"]="shooting_newton", M: int = 100, TOL: float = 1e-5, initial_approximation=None):
+    def solve(self, h: float = 0.1, method: Literal["shooting_newton", "finite_difference"]="shooting_newton", M: int = 100, TOL: float = 1e-5, initial_approximation=None):
         if method == "shooting_newton":
             return self.solve_shooting_newton(h, M, TOL, initial_approximation)
+        if method == "finite_difference":
+            return self.solve_finite_difference(h, M, TOL)
         raise ValueError("Invalid method.")
     
     def solve_shooting_newton(self, h: float, M, TOL, initial_approximation) -> Polynomial:
@@ -866,6 +868,47 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
             t = t0            
             i += 1
         
+        return None
+
+    def solve_finite_difference(self, h: float, M: int, TOL: float) -> Polynomial:
+        N = int(round((self.b - self.a) / h)) - 1
+
+        pd_step = 1e-5
+
+        def df_dy(x, y, z):
+            return (self.f(x, y + pd_step, z) - self.f(x, y - pd_step, z)) / (2 * pd_step)
+
+        def df_dz(x, y, z):
+            return (self.f(x, y, z + pd_step) - self.f(x, y, z - pd_step)) / (2 * pd_step)
+
+        # Initial approximation: linear interpolation between boundary values
+        u = [self.y0 + (j + 1) * h * (self.y1 - self.y0) / (self.b - self.a) for j in range(N)]
+
+        for _ in range(M):
+            A = Matrix(*[Vector(*[0.0 for _ in range(N)]) for _ in range(N)])
+            F = [0.0] * N
+
+            for j in range(N):
+                xi = self.a + (j + 1) * h
+                wi = u[j]
+                wi_prev = u[j - 1] if j > 0 else self.y0
+                wi_next = u[j + 1] if j < N - 1 else self.y1
+                zprime = (wi_next - wi_prev) / (2 * h)
+
+                F[j] = wi_next - 2 * wi + wi_prev - h ** 2 * self.f(xi, wi, zprime)
+                A[j][j] = -2 - h ** 2 * df_dy(xi, wi, zprime)
+                if j > 0:
+                    A[j][j - 1] = 1 + (h / 2) * df_dz(xi, wi, zprime)
+                if j < N - 1:
+                    A[j][j + 1] = 1 - (h / 2) * df_dz(xi, wi, zprime)
+
+            delta = LinearSystem(A, Vector(*[-fi for fi in F])).solve()
+            u = [u[j] + delta[j] for j in range(N)]
+
+            if max(abs(delta[j]) for j in range(N)) < TOL:
+                w = [self.y0] + u + [self.y1]
+                return Polynomial.interpolate([(self.a + i * h, w[i]) for i in range(N + 2)])
+
         return None
 
 class LinearSystem:

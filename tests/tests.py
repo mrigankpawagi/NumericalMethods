@@ -1222,5 +1222,78 @@ class TestProblemSet11(unittest.TestCase):
         self.assertAlmostEqual(result[3], 1.7116713636740863, places=3)
 
 
+class TestProblemSet12(unittest.TestCase):
+    """Tests for Problem Set 12 - Nonlinear Finite Difference Method"""
+
+    def test_problem1(self):
+        """
+        Use the Nonlinear Finite-Difference Algorithm with h = 0.5 to approximate
+        y'' = -(y')^2 - y + ln x, y(1) = 0, y(2) = ln 2.
+        Exact: y(x) = ln x.
+        """
+        a, b, h = 1, 2, 0.5
+        f = MultiVariableFunction(lambda x, y, z: -(z ** 2) - y + math.log(x))
+        BVP = SecondOrderODE_BVP(f, a, b, y0=0, y1=math.log(2))
+        sol = BVP.solve(h, method='finite_difference')
+        GT = Log(Polynomial(0, 1))
+
+        expected_sol = [0.0, 0.40679666114997404, 0.6931471805599453]
+        expected_gt = [0.0, 0.4054651081081644, 0.6931471805599453]
+        n_steps = int((b - a) / h)
+        for i in range(n_steps + 1):
+            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=7)
+            self.assertAlmostEqual(GT(a + i * h), expected_gt[i], places=7)
+
+    def test_problem2(self):
+        """
+        Use the Nonlinear Finite-Difference Algorithm with h = 0.25 to approximate
+        y'' = -(y')^2 - y + ln x, y(1) = 0, y(2) = ln 2.
+        Exact: y(x) = ln x.
+        """
+        a, b, h = 1, 2, 0.25
+        f = MultiVariableFunction(lambda x, y, z: -(z ** 2) - y + math.log(x))
+        BVP = SecondOrderODE_BVP(f, a, b, y0=0, y1=math.log(2))
+        sol = BVP.solve(h, method='finite_difference')
+        GT = Log(Polynomial(0, 1))
+
+        expected_sol = [
+            0.0, 0.22348959036260738, 0.40579097453183666,
+            0.559796420971104, 0.6931471805599453,
+        ]
+        expected_gt = [
+            0.0, 0.22314355131420976, 0.4054651081081644,
+            0.5596157879354227, 0.6931471805599453,
+        ]
+        n_steps = int((b - a) / h)
+        for i in range(n_steps + 1):
+            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=7)
+            self.assertAlmostEqual(GT(a + i * h), expected_gt[i], places=7)
+
+    def test_problem3(self):
+        """
+        Apply the Nonlinear Finite-Difference Algorithm to
+        y'' = (1/8)(32 + 2x^3 - yy'), y(1) = 17, y(3) = 43/3, N = 20.
+        Exact: y(x) = x^2 + 16/x.
+        """
+        a, b, N = 1, 3, 20
+        h = (b - a) / (N + 1)
+        f = MultiVariableFunction(lambda x, y, z: (1 / 8) * (32 + 2 * x ** 3 - y * z))
+        BVP = SecondOrderODE_BVP(f, a, b, y0=17, y1=43 / 3)
+        sol = BVP.solve(h, method='finite_difference', M=100, TOL=1e-5)
+        GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
+
+        expected_sol = [
+            17.0, 15.807412863150837, 14.855834306699219, 14.095723314109152,
+            13.491209216928077, 13.015680622948132, 12.648978795309182,
+            12.375553544340907, 12.183217353977753, 12.062282945264469,
+            12.004953320542874, 12.004882069580995, 12.056850957694735,
+            12.156529854749914, 12.300295475043924, 12.485092781010152,
+            12.708327778788954, 12.967783713066543, 13.261554912207485,
+            13.58799409376059, 13.945670039397328, 14.333333333333327,
+        ]
+        for i in range(N + 2):
+            self.assertAlmostEqual(sol(a + i * h), expected_sol[i], places=5)
+
+
 if __name__ == '__main__':
     unittest.main()
