@@ -8,6 +8,15 @@ from numericalmethods import (
     SecondOrderLinearODE_BVP, SecondOrderODE_BVP,
     Vector, Matrix, LinearSystem,
     Util,
+    DifferentiationMethod,
+    IntegrationMethod,
+    RootFindingMethod,
+    InterpolationMethod,
+    InterpolationForm,
+    ODEMethod,
+    BVPMethod,
+    NonlinearBVPMethod,
+    LinearSolverMethod,
 )
 
 
@@ -20,7 +29,7 @@ class TestProblemSet1(unittest.TestCase):
         x^3 - 7x^2 + 14x - 6 = 0 on [0, 1].
         """
         f = Polynomial(-6, 14, -7, 1)
-        result = f.root('bisection', a=0, b=1, TOLERANCE=1e-4)
+        result = f.root(RootFindingMethod.BISECTION, a=0, b=1, TOLERANCE=1e-4)
         self.assertAlmostEqual(result, 0.585784912109375, places=10)
 
     def test_problem2(self):
@@ -29,7 +38,7 @@ class TestProblemSet1(unittest.TestCase):
         accuracy of 1e-4. How many iterations are required?
         """
         f = Polynomial(0, 1) - Exponent(Polynomial(0, -1))
-        root, iterations = f.root('bisection', a=0, b=1, TOLERANCE=1e-4, return_iterations=True)
+        root, iterations = f.root(RootFindingMethod.BISECTION, a=0, b=1, TOLERANCE=1e-4, return_iterations=True)
         self.assertAlmostEqual(root, 0.567169189453125, places=10)
         self.assertEqual(iterations, 15)
 
@@ -81,7 +90,7 @@ class TestProblemSet1(unittest.TestCase):
         """
         f = Polynomial(0, 0, 0, -1) - Cos(Polynomial(0, 1))
         f.differentiate(Polynomial(0, 0, -3) + Sin(Polynomial(0, 1)))
-        root = f.root('newton', p0=-1, early_stop=2)
+        root = f.root(RootFindingMethod.NEWTON, p0=-1, early_stop=2)
         self.assertAlmostEqual(root, -0.8654740738468996, places=10)
 
     def test_problem7(self):
@@ -92,7 +101,7 @@ class TestProblemSet1(unittest.TestCase):
         its derivative -2 + 2x + 4x^3.
         """
         f = Polynomial(-2, 2, 0, 4)
-        result = f.root('newton', p0=0.5, TOLERANCE=1e-4)
+        result = f.root(RootFindingMethod.NEWTON, p0=0.5, TOLERANCE=1e-4)
         self.assertAlmostEqual(result, 0.5897545123016604, delta=1e-4)
 
     def test_problem8(self):
@@ -102,8 +111,8 @@ class TestProblemSet1(unittest.TestCase):
         Starting from x0 = 4 Newton's method does not converge; x0 = 4.6 converges.
         """
         f = Polynomial(0, 1) - Tan(Polynomial(0, 1))
-        result_1 = f.root('newton', p0=4)
-        result_2 = f.root('newton', p0=4.6)
+        result_1 = f.root(RootFindingMethod.NEWTON, p0=4)
+        result_2 = f.root(RootFindingMethod.NEWTON, p0=4.6)
         self.assertIsNone(result_1)
         self.assertAlmostEqual(result_2, 4.493409457909064, places=7)
 
@@ -113,7 +122,7 @@ class TestProblemSet1(unittest.TestCase):
         intersection of the curves y = x^2 - 2 and y = cos x.
         """
         f = Polynomial(-2, 0, 1) - Cos(Polynomial(0, 1))
-        result = f.root('newton', p0=1.5, TOLERANCE=1e-4)
+        result = f.root(RootFindingMethod.NEWTON, p0=1.5, TOLERANCE=1e-4)
         self.assertAlmostEqual(result, 1.4546189292083291, delta=1e-4)
 
     def test_problem10(self):
@@ -122,7 +131,7 @@ class TestProblemSet1(unittest.TestCase):
         The method converges to near zero (at order 1).
         """
         f = Function(lambda x: (x ** 2) ** (1 / 3) * (-1 if x < 0 else 1))
-        result = f.root('newton', p0=0.1, TOLERANCE=1e-5)
+        result = f.root(RootFindingMethod.NEWTON, p0=0.1, TOLERANCE=1e-5)
         self.assertAlmostEqual(result, 0.0, delta=1e-5)
 
 
@@ -135,7 +144,7 @@ class TestProblemSet2(unittest.TestCase):
         Use the Newton-Raphson formula to obtain a better estimate.
         """
         f = Polynomial(-2, 1) + Log(Polynomial(0, 1), base=10)
-        result = f.root('newton', p0=1.5)
+        result = f.root(RootFindingMethod.NEWTON, p0=1.5)
         self.assertAlmostEqual(result, 1.7555794992611777, places=7)
 
     def test_problem2(self):
@@ -147,17 +156,17 @@ class TestProblemSet2(unittest.TestCase):
         f = Polynomial(-9, -221, 9, 18, 230)
 
         # Root in [-1, 0]
-        newton_neg = f.root('newton', p0=-0.5, TOLERANCE=1e-3)
-        secant_neg = f.root('secant', p0=-1, p1=0, TOLERANCE=1e-3)
-        rf_neg = f.root('regula_falsi', p0=-1, p1=0, TOLERANCE=1e-3)
+        newton_neg = f.root(RootFindingMethod.NEWTON, p0=-0.5, TOLERANCE=1e-3)
+        secant_neg = f.root(RootFindingMethod.SECANT, p0=-1, p1=0, TOLERANCE=1e-3)
+        rf_neg = f.root(RootFindingMethod.REGULA_FALSI, p0=-1, p1=0, TOLERANCE=1e-3)
         self.assertAlmostEqual(newton_neg, -0.04065928831573657, places=3)
         self.assertAlmostEqual(secant_neg, -0.04065926257769109, places=3)
         self.assertAlmostEqual(rf_neg, -0.0399800081852857, places=3)
 
         # Root in [0, 1] — only Regula Falsi converges to the positive root
-        newton_pos = f.root('newton', p0=0.5, TOLERANCE=1e-3)
-        secant_pos = f.root('secant', p0=0, p1=1, TOLERANCE=1e-3)
-        rf_pos = f.root('regula_falsi', p0=0, p1=1, TOLERANCE=1e-3)
+        newton_pos = f.root(RootFindingMethod.NEWTON, p0=0.5, TOLERANCE=1e-3)
+        secant_pos = f.root(RootFindingMethod.SECANT, p0=0, p1=1, TOLERANCE=1e-3)
+        rf_pos = f.root(RootFindingMethod.REGULA_FALSI, p0=0, p1=1, TOLERANCE=1e-3)
         self.assertAlmostEqual(newton_pos, -0.04065928833435429, places=3)
         self.assertAlmostEqual(secant_pos, -0.04065922824320606, places=3)
         self.assertAlmostEqual(rf_pos, 0.962391746837012, places=3)
@@ -171,19 +180,19 @@ class TestProblemSet2(unittest.TestCase):
         """
         # (a)
         f = Polynomial(-5, 0, -2, 1)
-        root_a, iters_a = f.root('newton', p0=3, TOLERANCE=1e-5, return_iterations=True)
+        root_a, iters_a = f.root(RootFindingMethod.NEWTON, p0=3, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_a, 2.690647448031735, places=5)
         self.assertEqual(iters_a, 4)
 
         # (b) solve via the derivative of f to avoid issues around the minimum
         g = 2 * (Polynomial(0, 1) - Exponent(Polynomial(0, -1))) * (1 + Exponent(Polynomial(0, -1)))
-        root_b, iters_b = g.root('newton', p0=0.6, TOLERANCE=1e-5, return_iterations=True)
+        root_b, iters_b = g.root(RootFindingMethod.NEWTON, p0=0.6, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_b, 0.5671432904107577, places=5)
         self.assertEqual(iters_b, 3)
 
         # (c)
         f = (Polynomial(0, 1) - Exponent(Polynomial(0, -1), base=2)) ** Polynomial(3)
-        root_c, iters_c = f.root('newton', p0=0.5, TOLERANCE=1e-5, return_iterations=True)
+        root_c, iters_c = f.root(RootFindingMethod.NEWTON, p0=0.5, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_c, 0.641187997338787, places=5)
         self.assertEqual(iters_c, 23)
 
@@ -195,19 +204,19 @@ class TestProblemSet2(unittest.TestCase):
         """
         # (a)
         f = Polynomial(-5, 0, -2, 1)
-        root_a, iters_a = f.root('modified_newton', p0=3, TOLERANCE=1e-5, return_iterations=True)
+        root_a, iters_a = f.root(RootFindingMethod.MODIFIED_NEWTON, p0=3, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_a, 2.6906474480239617, places=5)
         self.assertEqual(iters_a, 4)
 
         # (b)
         f = (Polynomial(0, 1) - Exponent(Polynomial(0, -1))) ** Polynomial(2)
-        root_b, iters_b = f.root('modified_newton', p0=0.6, TOLERANCE=1e-5, return_iterations=True)
+        root_b, iters_b = f.root(RootFindingMethod.MODIFIED_NEWTON, p0=0.6, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_b, 0.5671501775692881, places=5)
         self.assertEqual(iters_b, 3)
 
         # (c)
         f = (Polynomial(0, 1) - Exponent(Polynomial(0, -1), base=2)) ** Polynomial(3)
-        root_c, iters_c = f.root('modified_newton', p0=0.5, TOLERANCE=1e-5, return_iterations=True)
+        root_c, iters_c = f.root(RootFindingMethod.MODIFIED_NEWTON, p0=0.5, TOLERANCE=1e-5, return_iterations=True)
         self.assertAlmostEqual(root_c, 0.641197156792501, places=5)
         self.assertEqual(iters_c, 4)
 
@@ -221,14 +230,14 @@ class TestProblemSet2(unittest.TestCase):
         # (a) cubic Lagrange through four points
         f = Polynomial.interpolate(
             [(8.1, 16.94410), (8.3, 17.56492), (8.6, 18.50515), (8.7, 18.82091)],
-            method='lagrange'
+            method=InterpolationMethod.LAGRANGE
         )
         self.assertAlmostEqual(f(8.4), 17.8771425, places=6)
 
         # (b) cubic Lagrange through four points
         f = Polynomial.interpolate(
             [(0.1, 0.62049958), (0.2, -0.28398668), (0.3, 0.00660095), (0.4, 0.24842440)],
-            method='lagrange'
+            method=InterpolationMethod.LAGRANGE
         )
         self.assertAlmostEqual(f(0.25), -0.21033722187499995, places=6)
 
@@ -245,18 +254,18 @@ class TestProblemSet3(unittest.TestCase):
         """
         # (a)
         data_a = [(-0.75, -0.07181250), (-0.5, -0.02475), (-0.25, 0.3349375), (0, 1.101000)]
-        p1 = Polynomial.interpolate(data_a[:2], form='forward_diff')
-        p2 = Polynomial.interpolate(data_a[:3], form='forward_diff')
-        p3 = Polynomial.interpolate(data_a[:4], form='forward_diff')
+        p1 = Polynomial.interpolate(data_a[:2], form=InterpolationForm.FORWARD_DIFF)
+        p2 = Polynomial.interpolate(data_a[:3], form=InterpolationForm.FORWARD_DIFF)
+        p3 = Polynomial.interpolate(data_a[:4], form=InterpolationForm.FORWARD_DIFF)
         self.assertAlmostEqual(p1(-1 / 3), 0.006625000000000006, places=10)
         self.assertAlmostEqual(p2(-1 / 3), 0.1803055555555556, places=10)
         self.assertAlmostEqual(p3(-1 / 3), 0.17451851851851857, places=10)
 
         # (b)
         data_b = [(0.1, -0.62049958), (0.2, -0.28398668), (0.3, 0.00660095), (0.4, 0.24842440)]
-        p1 = Polynomial.interpolate(data_b[:2], form='forward_diff')
-        p2 = Polynomial.interpolate(data_b[:3], form='forward_diff')
-        p3 = Polynomial.interpolate(data_b[:4], form='forward_diff')
+        p1 = Polynomial.interpolate(data_b[:2], form=InterpolationForm.FORWARD_DIFF)
+        p2 = Polynomial.interpolate(data_b[:3], form=InterpolationForm.FORWARD_DIFF)
+        p3 = Polynomial.interpolate(data_b[:4], form=InterpolationForm.FORWARD_DIFF)
         self.assertAlmostEqual(p1(0.25), -0.11573022999999993, places=10)
         self.assertAlmostEqual(p2(0.25), -0.13295220624999998, places=10)
         self.assertAlmostEqual(p3(0.25), -0.132774774375, places=10)
@@ -267,18 +276,18 @@ class TestProblemSet3(unittest.TestCase):
         """
         # (a)
         data_a = [(-0.75, -0.07181250), (-0.5, -0.02475), (-0.25, 0.3349375), (0, 1.101000)]
-        p1 = Polynomial.interpolate(data_a[:2], form='backward_diff')
-        p2 = Polynomial.interpolate(data_a[:3], form='backward_diff')
-        p3 = Polynomial.interpolate(data_a[:4], form='backward_diff')
+        p1 = Polynomial.interpolate(data_a[:2], form=InterpolationForm.BACKWARD_DIFF)
+        p2 = Polynomial.interpolate(data_a[:3], form=InterpolationForm.BACKWARD_DIFF)
+        p3 = Polynomial.interpolate(data_a[:4], form=InterpolationForm.BACKWARD_DIFF)
         self.assertAlmostEqual(p1(-1 / 3), 0.006625000000000006, places=10)
         self.assertAlmostEqual(p2(-1 / 3), 0.18030555555555558, places=10)
         self.assertAlmostEqual(p3(-1 / 3), 0.1745185185185185, places=10)
 
         # (b)
         data_b = [(0.1, -0.62049958), (0.2, -0.28398668), (0.3, 0.00660095), (0.4, 0.24842440)]
-        p1 = Polynomial.interpolate(data_b[:2], form='backward_diff')
-        p2 = Polynomial.interpolate(data_b[:3], form='backward_diff')
-        p3 = Polynomial.interpolate(data_b[:4], form='backward_diff')
+        p1 = Polynomial.interpolate(data_b[:2], form=InterpolationForm.BACKWARD_DIFF)
+        p2 = Polynomial.interpolate(data_b[:3], form=InterpolationForm.BACKWARD_DIFF)
+        p3 = Polynomial.interpolate(data_b[:4], form=InterpolationForm.BACKWARD_DIFF)
         self.assertAlmostEqual(p1(0.25), -0.11573022999999996, places=10)
         self.assertAlmostEqual(p2(0.25), -0.13295220624999998, places=10)
         self.assertAlmostEqual(p3(0.25), -0.1327747743750001, places=10)
@@ -305,18 +314,18 @@ class TestProblemSet3(unittest.TestCase):
         """
         # (a)
         data_a = [(-0.75, -0.07181250), (-0.5, -0.02475), (-0.25, 0.3349375), (0, 1.101000)]
-        p1 = Polynomial.interpolate(data_a[:2], method='lagrange')
-        p2 = Polynomial.interpolate(data_a[:3], method='lagrange')
-        p3 = Polynomial.interpolate(data_a[:4], method='lagrange')
+        p1 = Polynomial.interpolate(data_a[:2], method=InterpolationMethod.LAGRANGE)
+        p2 = Polynomial.interpolate(data_a[:3], method=InterpolationMethod.LAGRANGE)
+        p3 = Polynomial.interpolate(data_a[:4], method=InterpolationMethod.LAGRANGE)
         self.assertAlmostEqual(p1(-1 / 3), 0.006625000000000006, places=10)
         self.assertAlmostEqual(p2(-1 / 3), 0.1803055555555556, places=10)
         self.assertAlmostEqual(p3(-1 / 3), 0.1745185185185186, places=10)
 
         # (b)
         data_b = [(0.1, -0.62049958), (0.2, -0.28398668), (0.3, 0.00660095), (0.4, 0.24842440)]
-        p1 = Polynomial.interpolate(data_b[:2], method='lagrange')
-        p2 = Polynomial.interpolate(data_b[:3], method='lagrange')
-        p3 = Polynomial.interpolate(data_b[:4], method='lagrange')
+        p1 = Polynomial.interpolate(data_b[:2], method=InterpolationMethod.LAGRANGE)
+        p2 = Polynomial.interpolate(data_b[:3], method=InterpolationMethod.LAGRANGE)
+        p3 = Polynomial.interpolate(data_b[:4], method=InterpolationMethod.LAGRANGE)
         self.assertAlmostEqual(p1(0.25), -0.11573022999999993, places=10)
         self.assertAlmostEqual(p2(0.25), -0.13295220624999998, places=10)
         self.assertAlmostEqual(p3(0.25), -0.132774774375, places=10)
@@ -331,8 +340,8 @@ class TestProblemSet4(unittest.TestCase):
         int_1^5 sqrt(1 + x^2) dx.
         """
         f = Polynomial(1, 0, 1) ** Polynomial(0.5)
-        rect = f.integrate(1, 5, method='rectangular')
-        mid = f.integrate(1, 5, method='midpoint')
+        rect = f.integrate(1, 5, method=IntegrationMethod.RECTANGULAR)
+        mid = f.integrate(1, 5, method=IntegrationMethod.MIDPOINT)
         self.assertAlmostEqual(rect, 5.656854249492381, places=7)
         self.assertAlmostEqual(mid, 12.649110640673518, places=7)
 
@@ -341,7 +350,7 @@ class TestProblemSet4(unittest.TestCase):
         Redo Problem 1 using the trapezoidal rule.
         """
         f = Polynomial(1, 0, 1) ** Polynomial(0.5)
-        result = f.integrate(1, 5, method='trapezoidal')
+        result = f.integrate(1, 5, method=IntegrationMethod.TRAPEZOIDAL)
         self.assertAlmostEqual(result, 13.026466151931759, places=7)
 
     def test_problem3(self):
@@ -350,7 +359,7 @@ class TestProblemSet4(unittest.TestCase):
         int_4^6 1 / (3 - sqrt(x)) dx.
         """
         f = 1 / (3 - Polynomial(0, 1) ** Polynomial(0.5))
-        result = f.integrate(4, 6, method='simpson')
+        result = f.integrate(4, 6, method=IntegrationMethod.SIMPSON)
         self.assertAlmostEqual(result, 2.684188186142505, places=7)
 
     def test_problem4(self):
@@ -360,7 +369,7 @@ class TestProblemSet4(unittest.TestCase):
         (b) int_0^{pi/3} sin^2(x) dx  (deduced using cos^2 + sin^2 = 1)
         """
         f = Cos(Polynomial(0, 1)) ** Polynomial(2)
-        ans1 = f.integrate(0, math.pi / 3, method='simpson')
+        ans1 = f.integrate(0, math.pi / 3, method=IntegrationMethod.SIMPSON)
         ans2 = (math.pi / 3) - ans1
         self.assertAlmostEqual(ans1, 0.74176493209759, places=7)
         self.assertAlmostEqual(ans2, 0.30543261909900765, places=7)
@@ -370,7 +379,7 @@ class TestProblemSet4(unittest.TestCase):
         Evaluate int_0^4 (x^2 + cos x) dx using the midpoint formula.
         """
         f = Polynomial(0, 0, 1) + Cos(Polynomial(0, 1))
-        result = f.integrate(0, 4, method='midpoint')
+        result = f.integrate(0, 4, method=IntegrationMethod.MIDPOINT)
         self.assertAlmostEqual(result, 14.33541265381143, places=7)
 
     def test_problem6(self):
@@ -381,8 +390,8 @@ class TestProblemSet4(unittest.TestCase):
         (c) Compute the true error in both cases.  True value = 3.75.
         """
         f = Polynomial(0, 0, 0, 1)
-        ans1 = f.integrate(1, 2, method='trapezoidal', n=4)
-        ans2 = f.integrate(1, 2, method='trapezoidal', n=8)
+        ans1 = f.integrate(1, 2, method=IntegrationMethod.TRAPEZOIDAL, n=4)
+        ans2 = f.integrate(1, 2, method=IntegrationMethod.TRAPEZOIDAL, n=8)
         f.integral(Polynomial(0, 0, 0, 0, 0.25))
         true_val = f.integrate(1, 2)
         self.assertAlmostEqual(ans1, 3.796875, places=7)
@@ -398,8 +407,8 @@ class TestProblemSet4(unittest.TestCase):
         (c) Compute the true error in both cases.  Simpson's rule is exact for cubics.
         """
         f = Polynomial(0, 0, 0, 1)
-        ans1 = f.integrate(1, 2, method='simpson', n=4)
-        ans2 = f.integrate(1, 2, method='simpson', n=8)
+        ans1 = f.integrate(1, 2, method=IntegrationMethod.SIMPSON, n=4)
+        ans2 = f.integrate(1, 2, method=IntegrationMethod.SIMPSON, n=8)
         f.integral(Polynomial(0, 0, 0, 0, 0.25))
         true_val = f.integrate(1, 2)
         self.assertAlmostEqual(ans1, 3.75, places=7)
@@ -413,9 +422,9 @@ class TestProblemSet4(unittest.TestCase):
         int_0^2 e^{x^2} dx, and compute the true errors.
         """
         f = Exponent(Polynomial(0, 0, 1))
-        trapz = f.integrate(0, 2, method='trapezoidal', n=4)
-        simps = f.integrate(0, 2, method='simpson', n=4)
-        true_val = f.integrate(0, 2, 'rectangular', n=10000)
+        trapz = f.integrate(0, 2, method=IntegrationMethod.TRAPEZOIDAL, n=4)
+        simps = f.integrate(0, 2, method=IntegrationMethod.SIMPSON, n=4)
+        true_val = f.integrate(0, 2, method=IntegrationMethod.RECTANGULAR, n=10000)
         self.assertAlmostEqual(trapz, 20.644559049038712, places=7)
         self.assertAlmostEqual(simps, 16.538594702002605, places=7)
         self.assertAlmostEqual(abs(trapz - true_val), 4.197290370559472, places=3)
@@ -432,10 +441,10 @@ class TestProblemSet5(unittest.TestCase):
         Also compute the true errors.
         """
         f = Polynomial(1, 0, 5, 1)
-        res_rect_5 = f.integrate(1, 5, method='rectangular', n=5)
-        res_mid_5 = f.integrate(1, 5, method='midpoint', n=5)
-        res_rect_10 = f.integrate(1, 5, method='rectangular', n=10)
-        res_mid_10 = f.integrate(1, 5, method='midpoint', n=10)
+        res_rect_5 = f.integrate(1, 5, method=IntegrationMethod.RECTANGULAR, n=5)
+        res_mid_5 = f.integrate(1, 5, method=IntegrationMethod.MIDPOINT, n=5)
+        res_rect_10 = f.integrate(1, 5, method=IntegrationMethod.RECTANGULAR, n=10)
+        res_mid_10 = f.integrate(1, 5, method=IntegrationMethod.MIDPOINT, n=10)
         f.integral(Polynomial(0, 1, 0, 5 / 3, 1 / 4))
         true = f.integrate(1, 5)
 
@@ -454,10 +463,10 @@ class TestProblemSet5(unittest.TestCase):
         Simpson's rule integrates cubics exactly, so the true error is 0.
         """
         f = Polynomial(1, 0, 5, 1)
-        res_trap_5 = f.integrate(1, 5, method='trapezoidal', n=5)
-        res_simp_5 = f.integrate(1, 5, method='simpson', n=5)
-        res_trap_10 = f.integrate(1, 5, method='trapezoidal', n=10)
-        res_simp_10 = f.integrate(1, 5, method='simpson', n=10)
+        res_trap_5 = f.integrate(1, 5, method=IntegrationMethod.TRAPEZOIDAL, n=5)
+        res_simp_5 = f.integrate(1, 5, method=IntegrationMethod.SIMPSON, n=5)
+        res_trap_10 = f.integrate(1, 5, method=IntegrationMethod.TRAPEZOIDAL, n=10)
+        res_simp_10 = f.integrate(1, 5, method=IntegrationMethod.SIMPSON, n=10)
         f.integral(Polynomial(0, 1, 0, 5 / 3, 1 / 4))
         true = f.integrate(1, 5)
 
@@ -477,7 +486,7 @@ class TestProblemSet5(unittest.TestCase):
         """
         f = Polynomial(0, 1) * Sin(Polynomial(0, 1))
         f.integral(Sin(Polynomial(0, 1)) - Polynomial(0, 1) * Cos(Polynomial(0, 1)))
-        res = f.integrate(0, math.pi / 2, method='gauss', n=1)
+        res = f.integrate(0, math.pi / 2, method=IntegrationMethod.GAUSS, n=1)
         true = f.integrate(0, math.pi / 2)
         self.assertAlmostEqual(res, 0.8723580249548599, places=7)
         self.assertAlmostEqual(abs(true - res), 0.12764197504513997, places=7)
@@ -488,7 +497,7 @@ class TestProblemSet5(unittest.TestCase):
         """
         f = Polynomial(0, 1) * Sin(Polynomial(0, 1))
         f.integral(Sin(Polynomial(0, 1)) - Polynomial(0, 1) * Cos(Polynomial(0, 1)))
-        res = f.integrate(0, math.pi / 2, method='gauss', n=2)
+        res = f.integrate(0, math.pi / 2, method=IntegrationMethod.GAUSS, n=2)
         true = f.integrate(0, math.pi / 2)
         self.assertAlmostEqual(res, 1.0048348693320484, places=7)
         self.assertAlmostEqual(abs(true - res), 0.004834869332048464, places=7)
@@ -507,7 +516,7 @@ class TestProblemSet5(unittest.TestCase):
             + 2 * sum(f(c + i * h) for i in range(1, m))
             + 4 * sum(f(c + i * h + h / 2) for i in range(m))
         )
-        res = g.integrate(a, b, method='simpson', n=n)
+        res = g.integrate(a, b, method=IntegrationMethod.SIMPSON, n=n)
         self.assertAlmostEqual(res, 0.42955439362739267, places=7)
 
     def test_problem6(self):
@@ -521,7 +530,7 @@ class TestProblemSet5(unittest.TestCase):
             Polynomial(2 * (((a + b) / 2) + ((b - a) / 2) * r), 1)
         )
         g = f(-1 / math.sqrt(3)) + f(1 / math.sqrt(3))
-        res = g.integrate(c, d, method='gauss', n=1)
+        res = g.integrate(c, d, method=IntegrationMethod.GAUSS, n=1)
         self.assertAlmostEqual(res, 0.42981506172407835, places=7)
 
 
@@ -538,9 +547,9 @@ class TestProblemSet6(unittest.TestCase):
         a = 1.8
         max_err = lambda h: h / (2 * a ** 2)
 
-        res_01 = f.differentiate(h=0.1, method='forward')(a)
-        res_005 = f.differentiate(h=0.05, method='forward')(a)
-        res_001 = f.differentiate(h=0.01, method='forward')(a)
+        res_01 = f.differentiate(h=0.1, method=DifferentiationMethod.FORWARD)(a)
+        res_005 = f.differentiate(h=0.05, method=DifferentiationMethod.FORWARD)(a)
+        res_001 = f.differentiate(h=0.01, method=DifferentiationMethod.FORWARD)(a)
 
         self.assertAlmostEqual(res_01, 0.5406722127027574, places=7)
         self.assertAlmostEqual(res_005, 0.5479794837622887, places=7)
@@ -559,9 +568,9 @@ class TestProblemSet6(unittest.TestCase):
 
         # backward difference
         back_max_err = lambda h: h / (2 * (a - h) ** 2)
-        res_b01 = f.differentiate(h=0.1, method='backward')(a)
-        res_b005 = f.differentiate(h=0.05, method='backward')(a)
-        res_b001 = f.differentiate(h=0.01, method='backward')(a)
+        res_b01 = f.differentiate(h=0.1, method=DifferentiationMethod.BACKWARD)(a)
+        res_b005 = f.differentiate(h=0.05, method=DifferentiationMethod.BACKWARD)(a)
+        res_b001 = f.differentiate(h=0.01, method=DifferentiationMethod.BACKWARD)(a)
         self.assertAlmostEqual(res_b01, 0.5715841383994869, places=7)
         self.assertAlmostEqual(res_b005, 0.563417539333928, places=7)
         self.assertAlmostEqual(res_b001, 0.5571045049455381, places=7)
@@ -571,9 +580,9 @@ class TestProblemSet6(unittest.TestCase):
 
         # central difference
         cent_max_err = lambda h: (h ** 2) / (3 * (a - h) ** 3)
-        res_c01 = f.differentiate(h=0.1, method='central')(a)
-        res_c005 = f.differentiate(h=0.05, method='central')(a)
-        res_c001 = f.differentiate(h=0.01, method='central')(a)
+        res_c01 = f.differentiate(h=0.1, method=DifferentiationMethod.CENTRAL)(a)
+        res_c005 = f.differentiate(h=0.05, method=DifferentiationMethod.CENTRAL)(a)
+        res_c001 = f.differentiate(h=0.01, method=DifferentiationMethod.CENTRAL)(a)
         self.assertAlmostEqual(res_c01, 0.5561281755511222, places=7)
         self.assertAlmostEqual(res_c005, 0.5556985115481083, places=7)
         self.assertAlmostEqual(res_c001, 0.5555612712535352, places=7)
@@ -590,7 +599,7 @@ class TestProblemSet6(unittest.TestCase):
             lambda x, y: Polynomial(0, 1)(y) * Log(Polynomial(0, 1))(y) / Polynomial(0, 1)(x)
         )
         IVP = FirstOrderLinearODE(f, 2, 3, math.e)
-        sol = IVP.solve(h=0.1, method='euler')
+        sol = IVP.solve(h=0.1, method=ODEMethod.EULER)
         self.assertAlmostEqual(sol(3), 4.418072257635635, places=5)
 
     def test_problem4(self):
@@ -603,8 +612,8 @@ class TestProblemSet6(unittest.TestCase):
         gt = (Polynomial(1, 1) - 0.5 * Exponent(Polynomial(0, 1)))(1)
         IVP = FirstOrderLinearODE(f, 0, 1, 0.5)
 
-        sol1 = IVP.solve(h=0.1, method='euler')(1)
-        sol2 = IVP.solve(h=0.05, method='euler')(1)
+        sol1 = IVP.solve(h=0.1, method=ODEMethod.EULER)(1)
+        sol2 = IVP.solve(h=0.05, method=ODEMethod.EULER)(1)
 
         self.assertAlmostEqual(sol1, 0.7031287699500001, places=7)
         self.assertAlmostEqual(abs(gt - sol1), 0.06226968417952261, places=5)
@@ -631,17 +640,17 @@ class TestProblemSet7(unittest.TestCase):
         (d) y' = -xy + 4x/y, y(0) = 1, h = 0.25
         """
         ans1 = self._solve(
-            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, 'taylor', n=2
+            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, ODEMethod.TAYLOR, n=2
         )
         ans2 = self._solve(
             BivariateFunction(lambda x, y: Sin(Polynomial(0, 1))(x) + Exponent(Polynomial(0, -1))(x)),
-            0, 1, 0, 0.5, 'taylor', n=2
+            0, 1, 0, 0.5, ODEMethod.TAYLOR, n=2
         )
         ans3 = self._solve(
-            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, 'taylor', n=2
+            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, ODEMethod.TAYLOR, n=2
         )
         ans4 = self._solve(
-            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, 'taylor', n=2
+            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, ODEMethod.TAYLOR, n=2
         )
         self.assertAlmostEqual(ans1, 1.1827423857604942, places=7)
         self.assertAlmostEqual(ans2, 1.0768602913630998, places=7)
@@ -653,17 +662,17 @@ class TestProblemSet7(unittest.TestCase):
         Redo Problem 1 using the Runge-Kutta method of order 2.
         """
         ans1 = self._solve(
-            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, 'runge-kutta', n=2
+            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, ODEMethod.RUNGE_KUTTA, n=2
         )
         ans2 = self._solve(
             BivariateFunction(lambda x, y: Sin(Polynomial(0, 1))(x) + Exponent(Polynomial(0, -1))(x)),
-            0, 1, 0, 0.5, 'runge-kutta', n=2
+            0, 1, 0, 0.5, ODEMethod.RUNGE_KUTTA, n=2
         )
         ans3 = self._solve(
-            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, 'runge-kutta', n=2
+            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, ODEMethod.RUNGE_KUTTA, n=2
         )
         ans4 = self._solve(
-            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, 'runge-kutta', n=2
+            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, ODEMethod.RUNGE_KUTTA, n=2
         )
         self.assertAlmostEqual(ans1, 1.1808344690528974, places=7)
         self.assertAlmostEqual(ans2, 1.0953157056532528, places=7)
@@ -675,17 +684,17 @@ class TestProblemSet7(unittest.TestCase):
         Redo Problem 1 using the Trapezoidal method.
         """
         ans1 = self._solve(
-            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, 'trapezoidal'
+            BivariateFunction(lambda x, y: y / x - (y / x) ** 2), 1, 2, 1, 0.1, ODEMethod.TRAPEZOIDAL
         )
         ans2 = self._solve(
             BivariateFunction(lambda x, y: Sin(Polynomial(0, 1))(x) + Exponent(Polynomial(0, -1))(x)),
-            0, 1, 0, 0.5, 'trapezoidal'
+            0, 1, 0, 0.5, ODEMethod.TRAPEZOIDAL
         )
         ans3 = self._solve(
-            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, 'trapezoidal'
+            BivariateFunction(lambda x, y: (y ** 2 + y) / x), 1, 3, -2, 0.5, ODEMethod.TRAPEZOIDAL
         )
         ans4 = self._solve(
-            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, 'trapezoidal'
+            BivariateFunction(lambda x, y: -x * y + 4 * x / y), 0, 1, 1, 0.25, ODEMethod.TRAPEZOIDAL
         )
         self.assertAlmostEqual(ans1, 1.1805847365032, places=7)
         self.assertAlmostEqual(ans2, 1.095315705653253, places=7)
@@ -707,9 +716,9 @@ class TestProblemSet7(unittest.TestCase):
             - (1 / 25) * Exponent(Polynomial(0, 3))
             + (1 / 25) * Exponent(Polynomial(0, -2))
         )
-        sol_a_t = self._solve(fa, 0, 1, 0, 0.1, 'taylor', n=2)
-        sol_a_r = self._solve(fa, 0, 1, 0, 0.1, 'runge-kutta', n=2)
-        sol_a_p = self._solve(fa, 0, 1, 0, 0.1, 'trapezoidal')
+        sol_a_t = self._solve(fa, 0, 1, 0, 0.1, ODEMethod.TAYLOR, n=2)
+        sol_a_r = self._solve(fa, 0, 1, 0, 0.1, ODEMethod.RUNGE_KUTTA, n=2)
+        sol_a_p = self._solve(fa, 0, 1, 0, 0.1, ODEMethod.TRAPEZOIDAL)
         self.assertAlmostEqual(sol_a_t, 3.161454578035206, places=7)
         self.assertAlmostEqual(sol_a_r, 3.297890507632929, places=7)
         self.assertAlmostEqual(sol_a_p, 3.2477418088160586, places=7)
@@ -720,9 +729,9 @@ class TestProblemSet7(unittest.TestCase):
         # (b)
         fb = BivariateFunction(lambda x, y: 1 + (x - y) ** 2)
         gt_b = Polynomial(0, 1) + 1 / Polynomial(1, -1)
-        sol_b_t = self._solve(fb, 2, 3, 1, 0.5, 'taylor', n=2)
-        sol_b_r = self._solve(fb, 2, 3, 1, 0.5, 'runge-kutta', n=2)
-        sol_b_p = self._solve(fb, 2, 3, 1, 0.5, 'trapezoidal')
+        sol_b_t = self._solve(fb, 2, 3, 1, 0.5, ODEMethod.TAYLOR, n=2)
+        sol_b_r = self._solve(fb, 2, 3, 1, 0.5, ODEMethod.RUNGE_KUTTA, n=2)
+        sol_b_p = self._solve(fb, 2, 3, 1, 0.5, ODEMethod.TRAPEZOIDAL)
         self.assertAlmostEqual(sol_b_t, 2.4257869726429155, places=7)
         self.assertAlmostEqual(sol_b_r, 2.481553077697754, places=7)
         self.assertAlmostEqual(sol_b_p, 2.516854718589633, places=7)
@@ -733,9 +742,9 @@ class TestProblemSet7(unittest.TestCase):
         # (c)
         fc = BivariateFunction(lambda x, y: 1 + y / x)
         gt_c = Polynomial(0, 1) * Log(Polynomial(0, 1)) + Polynomial(0, 2)
-        sol_c_t = self._solve(fc, 1, 2, 1, 0.25, 'taylor', n=2)
-        sol_c_r = self._solve(fc, 1, 2, 1, 0.25, 'runge-kutta', n=2)
-        sol_c_p = self._solve(fc, 1, 2, 1, 0.25, 'trapezoidal')
+        sol_c_t = self._solve(fc, 1, 2, 1, 0.25, ODEMethod.TAYLOR, n=2)
+        sol_c_r = self._solve(fc, 1, 2, 1, 0.25, ODEMethod.RUNGE_KUTTA, n=2)
+        sol_c_p = self._solve(fc, 1, 2, 1, 0.25, ODEMethod.TRAPEZOIDAL)
         self.assertAlmostEqual(sol_c_t, 3.3940488287468473, places=7)
         self.assertAlmostEqual(sol_c_r, 3.372858560090703, places=7)
         self.assertAlmostEqual(sol_c_p, 3.3824397824272534, places=7)
@@ -769,17 +778,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-bashforth', step=2, points=[gt_a(0.2)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=2, points=[gt_a(0.2)])(1)
 
         sol_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-bashforth', step=2, points=[gt_b(2.2)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=2, points=[gt_b(2.2)])(3)
 
         sol_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-bashforth', step=2, points=[gt_c(1.2)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=2, points=[gt_c(1.2)])(2)
 
         self.assertAlmostEqual(sol_a, 2.8241682513173867, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_a), 0.39493106772210407, places=5)
@@ -799,17 +808,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-moulton', step=2, points=[gt_a(0.2)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=2, points=[gt_a(0.2)])(1)
 
         sol_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-moulton', step=2, points=[gt_b(2.2)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=2, points=[gt_b(2.2)])(3)
 
         sol_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-moulton', step=2, points=[gt_c(1.2)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=2, points=[gt_c(1.2)])(2)
 
         self.assertAlmostEqual(sol_a, 3.251286594238682, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_a), 0.0321872751991914, places=5)
@@ -831,17 +840,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_ab_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-bashforth', step=3, points=[gt_a(0.2), gt_a(0.4)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=3, points=[gt_a(0.2), gt_a(0.4)])(1)
 
         sol_ab_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-bashforth', step=3, points=[gt_b(2.2), gt_b(2.4)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=3, points=[gt_b(2.2), gt_b(2.4)])(3)
 
         sol_ab_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-bashforth', step=3, points=[gt_c(1.2), gt_c(1.4)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=3, points=[gt_c(1.2), gt_c(1.4)])(2)
 
         self.assertAlmostEqual(sol_ab_a, 3.0360680209672974, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_ab_a), 0.18303129807219332, places=5)
@@ -854,17 +863,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_am_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-moulton', step=3, points=[gt_a(0.2), gt_a(0.4)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=3, points=[gt_a(0.2), gt_a(0.4)])(1)
 
         sol_am_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-moulton', step=3, points=[gt_b(2.2), gt_b(2.4)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=3, points=[gt_b(2.2), gt_b(2.4)])(3)
 
         sol_am_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-moulton', step=3, points=[gt_c(1.2), gt_c(1.4)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=3, points=[gt_c(1.2), gt_c(1.4)])(2)
 
         self.assertAlmostEqual(sol_am_a, 3.2298092156426033, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_am_a), 0.010709896603112501, places=5)
@@ -880,7 +889,7 @@ class TestProblemSet8(unittest.TestCase):
         """
         f = BivariateFunction(lambda t, y: y - t ** 2 + 1)
         IVP = FirstOrderLinearODE(f, 0, 2, 0.5)
-        sol = IVP.solve(0.2, method='predictor-corrector')
+        sol = IVP.solve(0.2, method=ODEMethod.PREDICTOR_CORRECTOR)
         self.assertAlmostEqual(sol(2), 5.305370671515845, places=7)
 
     def test_problem5(self):
@@ -902,7 +911,7 @@ class TestProblemSet8(unittest.TestCase):
             ),
         )
         IVP = FirstOrderLinearODE(F, a, b, U0)
-        sol = IVP.solve(h, method='runge-kutta', n=2)
+        sol = IVP.solve(h, method=ODEMethod.RUNGE_KUTTA, n=2)
         self.assertAlmostEqual(sol[-1][0], 3.771001932367687, places=7)
         self.assertAlmostEqual(sol[-1][1], 4.121818316204175, places=7)
 
@@ -922,17 +931,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_ab_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
 
         sol_ab_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
 
         sol_ab_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-bashforth', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_BASHFORTH, step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
 
         self.assertAlmostEqual(sol_ab_a, 3.185400192276253, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_ab_a), 0.03369912676323761, places=5)
@@ -945,17 +954,17 @@ class TestProblemSet8(unittest.TestCase):
         sol_am_a = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: t * Exponent(Polynomial(0, 3))(t) - 2 * y),
             0, 1, 0
-        ).solve(0.2, method='adam-moulton', step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=5, points=[gt_a(0.2), gt_a(0.4), gt_a(0.6), gt_a(0.8)])(1)
 
         sol_am_b = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + (t - y) ** 2),
             2, 3, 1
-        ).solve(0.2, method='adam-moulton', step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=5, points=[gt_b(2.2), gt_b(2.4), gt_b(2.6), gt_b(2.8)])(3)
 
         sol_am_c = FirstOrderLinearODE(
             BivariateFunction(lambda t, y: 1 + y / t),
             1, 2, 2
-        ).solve(0.2, method='adam-moulton', step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
+        ).solve(0.2, method=ODEMethod.ADAMS_MOULTON, step=5, points=[gt_c(1.2), gt_c(1.4), gt_c(1.6), gt_c(1.8)])(2)
 
         self.assertAlmostEqual(sol_am_a, 3.2202048442288973, places=7)
         self.assertAlmostEqual(abs(gt_a(1) - sol_am_a), 0.001105525189406542, places=5)
@@ -982,7 +991,7 @@ class TestProblemSet9(unittest.TestCase):
             Function(lambda x: Sin(Log(Polynomial(0, 1)))(x) / (x ** 2)),
             a, b, y0=1, y1=2,
         )
-        sol = BVP.solve(h, method='shooting')
+        sol = BVP.solve(h, method=BVPMethod.SHOOTING)
         GT = (
             Polynomial(0, 1.139)
             - 0.039 / Polynomial(0, 0, 1)
@@ -1019,7 +1028,7 @@ class TestProblemSet9(unittest.TestCase):
             Function(lambda x: -4 * x),
             a, b, y0=0, y1=2,
         )
-        sol = BVP.solve(h, method='shooting')
+        sol = BVP.solve(h, method=BVPMethod.SHOOTING)
         GT = (
             (math.e ** 2 / (math.e ** 4 - 1))
             * (Exponent(Polynomial(0, 2)) - Exponent(Polynomial(0, -2)))
@@ -1043,7 +1052,7 @@ class TestProblemSet9(unittest.TestCase):
         h = (b - a) / (N + 1)
         f = MultiVariableFunction(lambda x, y, z: (1 / 8) * (32 + 2 * x ** 3 - y * z))
         BVP = SecondOrderODE_BVP(f, a, b, y0=17, y1=43 / 3)
-        sol = BVP.solve(h, method='shooting_newton', M=100, TOL=1e-5)
+        sol = BVP.solve(h, method=NonlinearBVPMethod.SHOOTING_NEWTON, M=100, tol=1e-5)
         GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
 
         expected_sol = [
@@ -1068,7 +1077,7 @@ class TestProblemSet9(unittest.TestCase):
         a, b, h = 1, 2, 0.5
         f = MultiVariableFunction(lambda x, y, z: -(z ** 2) - y + Log(Polynomial(0, 1))(x))
         BVP = SecondOrderODE_BVP(f, a, b, y0=0, y1=math.log(2))
-        sol = BVP.solve(h, method='shooting_newton')
+        sol = BVP.solve(h, method=NonlinearBVPMethod.SHOOTING_NEWTON)
         GT = Log(Polynomial(0, 1))
 
         expected_sol = [0.0, 0.44606540587021165, 0.6931564654262666]
@@ -1096,8 +1105,8 @@ class TestProblemSet10(unittest.TestCase):
             Function(lambda x: (Sin(Log(Polynomial(0, 1))) / Polynomial(0, 0, 1))(x)),
             a, b, y0=1, y1=2,
         )
-        sol_fd = BVP.solve(h, method='finite_difference')
-        sol_sh = BVP.solve(h, method='shooting')
+        sol_fd = BVP.solve(h, method=BVPMethod.FINITE_DIFFERENCE)
+        sol_sh = BVP.solve(h, method=BVPMethod.SHOOTING)
 
         expected_fd = [
             1.0, 1.092600520720135, 1.1870431287950733, 1.283336870214396,
@@ -1130,8 +1139,8 @@ class TestProblemSet10(unittest.TestCase):
             Polynomial(1, 0, -1) * Exponent(Polynomial(0, -1)),
             a, b, y0=1, y1=0,
         )
-        sol1 = BVP.solve(h1, method='finite_difference')
-        sol2 = BVP.solve(h2, method='finite_difference')
+        sol1 = BVP.solve(h1, method=BVPMethod.FINITE_DIFFERENCE)
+        sol2 = BVP.solve(h2, method=BVPMethod.FINITE_DIFFERENCE)
 
         # Spot-check a few values at the coarser grid spacing h2
         expected_n19 = [
@@ -1160,7 +1169,7 @@ class TestProblemSet10(unittest.TestCase):
             Cos(Polynomial(0, 1)),
             a, b, y0=0, y1=0,
         )
-        sol = BVP.solve(h, method='finite_difference')
+        sol = BVP.solve(h, method=BVPMethod.FINITE_DIFFERENCE)
         GT = (
             -(1 / 3) * Cos(Polynomial(0, 2))
             - (math.sqrt(2) / 6) * Sin(Polynomial(0, 2))
@@ -1193,7 +1202,7 @@ class TestProblemSet11(unittest.TestCase):
         """
         A = Matrix(Vector(4, -1, 1), Vector(2, 5, 2), Vector(1, 2, 4))
         b = Vector(8, 3, 11)
-        result = LinearSystem(A, b).solve(method='gauss_elimination')
+        result = LinearSystem(A, b).solve(method=LinearSolverMethod.GAUSS_ELIMINATION)
         self.assertAlmostEqual(result[0], 1.0, places=7)
         self.assertAlmostEqual(result[1], -1.0, places=7)
         self.assertAlmostEqual(result[2], 3.0, places=7)
@@ -1215,7 +1224,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(6, 25, -11, 15)
         result = LinearSystem(A, b).solve(
-            method='gauss_jacobi', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method=LinearSolverMethod.GAUSS_JACOBI, tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], 0.9996741452148707, places=3)
         self.assertAlmostEqual(result[1], 2.0004476715450092, places=3)
@@ -1234,7 +1243,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(6, 25, -11, 15)
         result = LinearSystem(A, b).solve(
-            method='gauss_seidel', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method=LinearSolverMethod.GAUSS_SEIDEL, tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], 1.000091280285995, places=3)
         self.assertAlmostEqual(result[1], 2.000021342246459, places=3)
@@ -1252,7 +1261,7 @@ class TestProblemSet11(unittest.TestCase):
         A = Matrix(Vector(1, 2, 3), Vector(2, -1, 2), Vector(3, 1, -2))
         b = Vector(5, 1, -1)
         result = LinearSystem(A, b).solve(
-            method='gauss_jacobi', TOL=1e-3, initial_approximation=Vector(0, 0, 0)
+            method=LinearSolverMethod.GAUSS_JACOBI, tol=1e-3, initial_approximation=Vector(0, 0, 0)
         )
         self.assertIsNone(result)
 
@@ -1272,7 +1281,7 @@ class TestProblemSet11(unittest.TestCase):
         )
         b = Vector(3, -2, 5, 4)
         result = LinearSystem(A, b).solve(
-            method='gauss_seidel', TOL=1e-3, initial_approximation=Vector(0, 0, 0, 0)
+            method=LinearSolverMethod.GAUSS_SEIDEL, tol=1e-3, initial_approximation=Vector(0, 0, 0, 0)
         )
         self.assertAlmostEqual(result[0], -0.46691045573724593, places=3)
         self.assertAlmostEqual(result[1], -0.8083614774349144, places=3)
@@ -1292,7 +1301,7 @@ class TestProblemSet12(unittest.TestCase):
         a, b, h = 1, 2, 0.5
         f = MultiVariableFunction(lambda x, y, z: -(z ** 2) - y + math.log(x))
         BVP = SecondOrderODE_BVP(f, a, b, y0=0, y1=math.log(2))
-        sol = BVP.solve(h, method='finite_difference')
+        sol = BVP.solve(h, method=NonlinearBVPMethod.FINITE_DIFFERENCE)
         GT = Log(Polynomial(0, 1))
 
         n_steps = int((b - a) / h)
@@ -1308,7 +1317,7 @@ class TestProblemSet12(unittest.TestCase):
         a, b, h = 1, 2, 0.25
         f = MultiVariableFunction(lambda x, y, z: -(z ** 2) - y + math.log(x))
         BVP = SecondOrderODE_BVP(f, a, b, y0=0, y1=math.log(2))
-        sol = BVP.solve(h, method='finite_difference')
+        sol = BVP.solve(h, method=NonlinearBVPMethod.FINITE_DIFFERENCE)
         GT = Log(Polynomial(0, 1))
 
         n_steps = int((b - a) / h)
@@ -1325,7 +1334,7 @@ class TestProblemSet12(unittest.TestCase):
         h = (b - a) / (N + 1)
         f = MultiVariableFunction(lambda x, y, z: (1 / 8) * (32 + 2 * x ** 3 - y * z))
         BVP = SecondOrderODE_BVP(f, a, b, y0=17, y1=43 / 3)
-        sol = BVP.solve(h, method='finite_difference', M=100, TOL=1e-5)
+        sol = BVP.solve(h, method=NonlinearBVPMethod.FINITE_DIFFERENCE, M=100, tol=1e-5)
         GT = Polynomial(0, 0, 1) + 16 / Polynomial(0, 1)
 
         for i in range(N + 2):
