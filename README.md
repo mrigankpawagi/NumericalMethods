@@ -18,15 +18,14 @@ A compact Python library that brings classical numerical methods to life — roo
 ## Quick start
 
 ```python
-from numericalmethods import Polynomial, RootFindingMethod, IntegrationMethod
+import math
+from numericalmethods import Polynomial, Sin, RootFindingMethod, IntegrationMethod
 
 # Root finding
 f = Polynomial(-6, 14, -7, 1)   # x³ − 7x² + 14x − 6
 root = f.root(RootFindingMethod.BISECTION, a=0, b=1, TOLERANCE=1e-6)
 
 # Integration
-from numericalmethods import Sin
-import math
 g = Sin(Polynomial(0, 1))       # sin(x)
 area = g.integrate(0, math.pi, method=IntegrationMethod.SIMPSON, n=100)
 ```
