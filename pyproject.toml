@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysolverkit"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python library of numerical methods for root finding, interpolation, integration, ODEs, and linear systems"
 readme = "README.md"
 requires-python = ">=3.10"
