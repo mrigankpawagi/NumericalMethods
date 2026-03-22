@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.backends.legacy:build"
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysolverkit"
@@ -8,3 +8,21 @@ version = "0.1.0"
 description = "A Python library of numerical methods for root finding, interpolation, integration, ODEs, and linear systems"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+keywords = ["numerical-methods", "scientific-computing", "ode", "interpolation", "root-finding", "fem"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.urls]
+Homepage = "https://github.com/mrigankpawagi/NumericalMethods"
+Repository = "https://github.com/mrigankpawagi/NumericalMethods"
+Documentation = "https://github.com/mrigankpawagi/NumericalMethods/tree/main/docs"
+Issues = "https://github.com/mrigankpawagi/NumericalMethods/issues"
+Changelog = "https://github.com/mrigankpawagi/NumericalMethods/releases"
