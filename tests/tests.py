@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from numericalmethods import (
+from pysolverkit import (
     Function, Polynomial, Exponent, Sin, Cos, Tan, Log,
     BivariateFunction, MultiVariableFunction,
     FirstOrderLinearODE,

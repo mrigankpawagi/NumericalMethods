@@ -1,6 +1,6 @@
-# Numerical Methods
+# PySolverKit
 
-[![Tests](https://github.com/mrigankpawagi/NumericalMethods/actions/workflows/tests.yml/badge.svg)](https://github.com/mrigankpawagi/NumericalMethods/actions/workflows/tests.yml)
+[![Tests](https://github.com/mrigankpawagi/PySolverKit/actions/workflows/tests.yml/badge.svg)](https://github.com/mrigankpawagi/PySolverKit/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 A compact Python library that brings classical numerical methods to life — root finding, interpolation, differentiation, integration, ODE solvers, linear systems, and 2D FEM for Poisson problems.
@@ -20,7 +20,7 @@ A compact Python library that brings classical numerical methods to life — roo
 
 ```python
 import math
-from numericalmethods import Polynomial, Sin, RootFindingMethod, IntegrationMethod
+from pysolverkit import Polynomial, Sin, RootFindingMethod, IntegrationMethod
 
 # Root finding
 f = Polynomial(-6, 14, -7, 1)   # x³ − 7x² + 14x − 6

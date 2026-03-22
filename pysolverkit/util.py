@@ -16,7 +16,7 @@ class Util:
         Parameters
         ----------
         s:
-            A :class:`~numericalmethods.functions.base.Function` (typically a
+            A :class:`~pysolverkit.functions.base.Function` (typically a
             linear polynomial in *x*).
         k:
             Non-negative integer.

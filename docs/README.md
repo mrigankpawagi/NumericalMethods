@@ -29,8 +29,8 @@
 Clone the repository and install in editable mode:
 
 ```bash
-git clone https://github.com/mrigankpawagi/NumericalMethods.git
-cd NumericalMethods
+git clone https://github.com/mrigankpawagi/PySolverKit.git
+cd PySolverKit
 pip install -e .
 ```
 
@@ -39,7 +39,7 @@ pip install -e .
 ## Package layout
 
 ```
-numericalmethods/
+pysolverkit/
 ├── enums.py              # Method selectors
 ├── functions/
 │   ├── base.py           # Function abstraction
@@ -56,7 +56,7 @@ numericalmethods/
 └── util.py               # Utility helpers
 ```
 
-Everything is re-exported from the top-level `numericalmethods` package.
+Everything is re-exported from the top-level `pysolverkit` package.
 
 ---
 
@@ -81,7 +81,7 @@ All function types inherit from `Function` and support arithmetic composition, d
 Functions compose naturally with operators:
 
 ```python
-from numericalmethods import Polynomial, Exponent
+from pysolverkit import Polynomial, Exponent
 
 f = Polynomial(0, 1)         # x
 g = Exponent(Polynomial(0, -1))  # e^(-x)
@@ -93,7 +93,7 @@ k = f * g                    # x * e^(-x)
 ### Differentiation
 
 ```python
-from numericalmethods import Polynomial, DifferentiationMethod
+from pysolverkit import Polynomial, DifferentiationMethod
 
 f = Polynomial(0, 0, 1)  # x^2
 df = f.differentiate()   # Forward difference (default), step h=1e-5
@@ -110,7 +110,7 @@ Available methods: `DifferentiationMethod.FORWARD`, `BACKWARD`, `CENTRAL`.
 ### Integration
 
 ```python
-from numericalmethods import Sin, Polynomial, IntegrationMethod
+from pysolverkit import Sin, Polynomial, IntegrationMethod
 import math
 
 f = Sin(Polynomial(0, 1))  # sin(x)
@@ -128,7 +128,7 @@ Available methods: `IntegrationMethod.RECTANGULAR`, `MIDPOINT`, `TRAPEZOIDAL`, `
 ### Root finding
 
 ```python
-from numericalmethods import Polynomial, Exponent, RootFindingMethod
+from pysolverkit import Polynomial, Exponent, RootFindingMethod
 
 f = Polynomial(-6, 14, -7, 1)  # x^3 - 7x^2 + 14x - 6
 
@@ -157,7 +157,7 @@ Available methods: `RootFindingMethod.BISECTION`, `NEWTON`, `MODIFIED_NEWTON`, `
 ### Fixed-point iteration
 
 ```python
-from numericalmethods import Function
+from pysolverkit import Function
 
 g = Function(lambda x: (x + 2/x) / 2)   # Babylonian sqrt(2) iteration
 result = g.fixed_point(p0=1.0, TOLERANCE=1e-8)
@@ -166,7 +166,7 @@ result = g.fixed_point(p0=1.0, TOLERANCE=1e-8)
 ### Interpolation
 
 ```python
-from numericalmethods import Polynomial, InterpolationMethod, InterpolationForm
+from pysolverkit import Polynomial, InterpolationMethod, InterpolationForm
 
 # Lagrange interpolation from data points
 xs = [0.0, 0.5, 1.0]
@@ -191,7 +191,7 @@ Available forms: `InterpolationForm.STANDARD`, `FORWARD_DIFF`, `BACKWARD_DIFF`.
 ### Vector and Matrix
 
 ```python
-from numericalmethods import Vector, Matrix
+from pysolverkit import Vector, Matrix
 
 v = Vector(1, 2, 3)       # 3-element column vector
 w = Vector(4, 5, 6)
@@ -216,7 +216,7 @@ Ainv = A.inverse()
 ### Solving linear systems
 
 ```python
-from numericalmethods import LinearSystem, Vector, Matrix, LinearSolverMethod
+from pysolverkit import LinearSystem, Vector, Matrix, LinearSolverMethod
 
 A = Matrix(Vector(2, 1), Vector(5, 7))
 b = Vector(11, 13)
@@ -242,7 +242,7 @@ Available methods: `LinearSolverMethod.GAUSS_ELIMINATION`, `GAUSS_JACOBI`, `GAUS
 Solves y′(x) = f(x, y) on [a, b] with y(a) = y₀.
 
 ```python
-from numericalmethods import BivariateFunction, FirstOrderLinearODE, ODEMethod
+from pysolverkit import BivariateFunction, FirstOrderLinearODE, ODEMethod
 
 rhs = BivariateFunction(lambda x, y: y)  # y' = y  →  solution: e^x
 ode = FirstOrderLinearODE(rhs, a=0, b=1, y0=1)
@@ -278,7 +278,7 @@ Available methods: `ODEMethod.EULER`, `RUNGE_KUTTA`, `TAYLOR`, `TRAPEZOIDAL`, `A
 Solves y″ = p(x)y′ + q(x)y + r(x) on [a, b] with boundary conditions y(a) = α, y(b) = β.
 
 ```python
-from numericalmethods import (
+from pysolverkit import (
     Function, SecondOrderLinearODE_BVP, BVPMethod
 )
 
@@ -299,7 +299,7 @@ Available methods: `BVPMethod.SHOOTING`, `FINITE_DIFFERENCE`.
 Solves y″ = f(x, y, y′) with boundary conditions y(a) = α, y(b) = β.
 
 ```python
-from numericalmethods import BivariateFunction, SecondOrderODE_BVP, NonlinearBVPMethod
+from pysolverkit import BivariateFunction, SecondOrderODE_BVP, NonlinearBVPMethod
 
 f = BivariateFunction(lambda x, yz: yz[1]**2 - yz[0] + 1)
 bvp = SecondOrderODE_BVP(f, a=0, b=1, alpha=0, beta=2)
@@ -315,7 +315,7 @@ Available methods: `NonlinearBVPMethod.SHOOTING_NEWTON`, `FINITE_DIFFERENCE`.
 Reduces second-order IVPs to a first-order system.
 
 ```python
-from numericalmethods import MultiVariableFunction, SecondOrderODE_IVP, ODEMethod
+from pysolverkit import MultiVariableFunction, SecondOrderODE_IVP, ODEMethod
 
 # y'' = -y  (simple harmonic oscillator)
 f = MultiVariableFunction(lambda x, y, yp: -y)
@@ -330,7 +330,7 @@ sol = ivp.solve(h=0.1, method=ODEMethod.RUNGE_KUTTA, n=4)
 `Util` provides standalone helper functions.
 
 ```python
-from numericalmethods import Util
+from pysolverkit import Util
 
 # Factorial
 Util.factorial(10)

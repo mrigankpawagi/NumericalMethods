@@ -5,10 +5,10 @@ from ..linalg.vector import Vector
 
 
 class MultiVariableFunction:
-    """A function of two or more scalar (or :class:`~numericalmethods.linalg.Vector`) arguments.
+    """A function of two or more scalar (or :class:`~pysolverkit.linalg.Vector`) arguments.
 
     Supports **partial application**: pass ``None`` for any argument to defer it,
-    returning a new :class:`~numericalmethods.functions.base.Function` (for a single
+    returning a new :class:`~pysolverkit.functions.base.Function` (for a single
     free argument) or a new :class:`MultiVariableFunction` (for multiple free arguments).
 
     Parameters

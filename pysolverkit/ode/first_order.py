@@ -17,8 +17,8 @@ class FirstOrderLinearODE(LinearODE):
     ----------
     f:
         Right-hand side :math:`f(x, y)`, given as a :class:`BivariateFunction`
-        (or a :class:`~numericalmethods.linalg.Vector` of
-        :class:`~numericalmethods.functions.multivariate.MultiVariableFunction` objects
+        (or a :class:`~pysolverkit.linalg.Vector` of
+        :class:`~pysolverkit.functions.multivariate.MultiVariableFunction` objects
         for systems of equations).
     a, b:
         Integration interval.
