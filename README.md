@@ -48,6 +48,3 @@ Contributions are welcome! To get started:
 2. Add or update tests in `tests/tests.py` for any new behaviour.
 3. Ensure all tests pass: `python3 -m unittest discover -s tests -v`
 4. Open a pull request with a clear description of the change.
-
-Please keep pull requests focused — one feature or fix per PR.
-
