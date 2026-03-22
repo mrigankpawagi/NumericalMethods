@@ -8,6 +8,7 @@ from .functions import (
     Log,
     MultiVariableFunction,
     BivariateFunction,
+    FEM2D,
 )
 from .linalg import Vector, Matrix, LinearSystem
 from .ode import (
@@ -42,6 +43,7 @@ __all__ = [
     "Log",
     "MultiVariableFunction",
     "BivariateFunction",
+    "FEM2D",
     # Linear algebra
     "Vector",
     "Matrix",

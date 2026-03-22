@@ -7,6 +7,7 @@ from numericalmethods import (
     FirstOrderLinearODE,
     SecondOrderLinearODE_BVP, SecondOrderODE_BVP,
     Vector, Matrix, LinearSystem,
+    FEM2D,
     Util,
     DifferentiationMethod,
     IntegrationMethod,
@@ -1288,6 +1289,77 @@ class TestProblemSet11(unittest.TestCase):
         self.assertAlmostEqual(result[2], 1.2299624998265166, places=3)
         self.assertAlmostEqual(result[3], 1.7116713636740863, places=3)
 
+
+class TestFEM2D(unittest.TestCase):
+    """Tests for FEM2D — 2D Poisson equation on a rectangular domain."""
+
+    def test_zero_solution(self):
+        """
+        Solve -Δu = 0 with u = 0 on the entire boundary of [0,1]².
+        The unique solution is u ≡ 0.
+        """
+        fem = FEM2D(
+            BivariateFunction(lambda x, y: 0.0),  # f = 0
+            BivariateFunction(lambda x, y: 0.0),  # g = 0
+            0.0, 1.0, 0.0, 1.0,
+        )
+        sol = fem.solve(nx=4, ny=4)
+        for x in [0.0, 0.25, 0.5, 0.75, 1.0]:
+            for y in [0.0, 0.25, 0.5, 0.75, 1.0]:
+                self.assertAlmostEqual(sol(x, y), 0.0, places=10)
+
+    def test_linear_exact_reproduction(self):
+        """
+        Solve -Δu = 0 with u = x + y on ∂Ω for [0,1]².
+        The exact solution is the harmonic function u(x,y) = x + y.
+        Linear triangular elements reproduce linear functions exactly.
+        """
+        fem = FEM2D(
+            BivariateFunction(lambda x, y: 0.0),          # f = 0
+            BivariateFunction(lambda x, y: x + y),        # g = x + y
+            0.0, 1.0, 0.0, 1.0,
+        )
+        sol = fem.solve(nx=4, ny=4)
+        for x in [0.0, 0.25, 0.5, 0.75, 1.0]:
+            for y in [0.0, 0.25, 0.5, 0.75, 1.0]:
+                self.assertAlmostEqual(sol(x, y), x + y, places=7)
+
+    def test_manufactured_solution(self):
+        """
+        Solve -Δu = 2(y(1-y) + x(1-x)) on [0,1]² with u = 0 on ∂Ω.
+        The exact solution is u(x,y) = x(1-x)·y(1-y).
+        Check the approximate value at the centre (0.5, 0.5) ≈ 0.0625
+        using a fine mesh (nx = ny = 8).
+        """
+        fem = FEM2D(
+            BivariateFunction(lambda x, y: 2 * (y * (1 - y) + x * (1 - x))),
+            BivariateFunction(lambda x, y: 0.0),
+            0.0, 1.0, 0.0, 1.0,
+        )
+        sol = fem.solve(nx=8, ny=8)
+        exact = 0.5 * 0.5 * 0.5 * 0.5   # = 0.0625
+        self.assertAlmostEqual(sol(0.5, 0.5), exact, places=2)
+
+    def test_boundary_conditions_enforced(self):
+        """
+        Check that Dirichlet boundary conditions are enforced exactly
+        at every boundary node.  We use g(x,y) = x² + y² as BC and
+        a non-zero source term.
+        """
+        fem = FEM2D(
+            BivariateFunction(lambda x, y: 1.0),
+            BivariateFunction(lambda x, y: x ** 2 + y ** 2),
+            0.0, 1.0, 0.0, 1.0,
+        )
+        sol = fem.solve(nx=4, ny=4)
+        # Check corners and edge midpoints
+        boundary_pts = [
+            (0.0, 0.0), (0.5, 0.0), (1.0, 0.0),
+            (0.0, 0.5), (1.0, 0.5),
+            (0.0, 1.0), (0.5, 1.0), (1.0, 1.0),
+        ]
+        for x, y in boundary_pts:
+            self.assertAlmostEqual(sol(x, y), x ** 2 + y ** 2, places=7)
 
 class TestProblemSet12(unittest.TestCase):
     """Tests for Problem Set 12 - Nonlinear Finite Difference Method"""

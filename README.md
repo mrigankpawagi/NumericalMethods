@@ -3,7 +3,7 @@
 [![Tests](https://github.com/mrigankpawagi/NumericalMethods/actions/workflows/tests.yml/badge.svg)](https://github.com/mrigankpawagi/NumericalMethods/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
-A compact Python library that brings classical numerical methods to life — root finding, interpolation, differentiation, integration, ODE solvers, and linear systems, all in a clean, composable API.
+A compact Python library that brings classical numerical methods to life — root finding, interpolation, differentiation, integration, ODE solvers, linear systems, and 2D FEM for Poisson problems.
 
 ## Features
 
@@ -14,6 +14,7 @@ A compact Python library that brings classical numerical methods to life — roo
 - **Integration** — rectangular, midpoint, trapezoidal, Simpson's, and Gauss-Legendre quadrature
 - **ODE solvers** — Euler, Runge-Kutta (orders 1–4), Taylor series, trapezoidal, Adams-Bashforth/Moulton, and predictor-corrector methods for first-order IVPs; shooting and finite-difference methods for second-order BVPs
 - **Linear algebra** — `Vector` and `Matrix` with arithmetic operations, and `LinearSystem` with Gaussian elimination and Gauss-Jacobi/Seidel iterative solvers
+- **2D FEM** — `FEM2D` for Poisson equations on rectangular domains with Dirichlet boundary conditions
 
 ## Quick start
 
