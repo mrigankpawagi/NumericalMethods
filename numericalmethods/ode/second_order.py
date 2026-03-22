@@ -50,7 +50,7 @@ class SecondOrderLinearODE_BVP(LinearODE):
     def solve(
         self,
         h: float = 0.1,
-        method: BVPMethod | str = BVPMethod.SHOOTING,
+        method: BVPMethod = BVPMethod.SHOOTING,
     ) -> Polynomial:
         """Solve the BVP and return an interpolating :class:`Polynomial`.
 
@@ -59,9 +59,8 @@ class SecondOrderLinearODE_BVP(LinearODE):
         h:
             Step size / mesh width.
         method:
-            Algorithm: ``"shooting"`` or ``"finite_difference"``.
+            Algorithm (:class:`BVPMethod`).
         """
-        method = BVPMethod(method)
 
         if method is BVPMethod.SHOOTING:
             return self._solve_shooting(h)
@@ -159,7 +158,7 @@ class SecondOrderODE_IVP(OrdinaryDifferentialEquation):
     def solve(
         self,
         h: float = 0.1,
-        method: ODEMethod | str = ODEMethod.EULER,
+        method: ODEMethod = ODEMethod.EULER,
         n: int = 1,
         step: int = 2,
         points: list[float] | None = None,
@@ -220,7 +219,7 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
     def solve(
         self,
         h: float = 0.1,
-        method: NonlinearBVPMethod | str = NonlinearBVPMethod.SHOOTING_NEWTON,
+        method: NonlinearBVPMethod = NonlinearBVPMethod.SHOOTING_NEWTON,
         M: int = 100,
         tol: float = 1e-5,
         initial_approximation=None,
@@ -232,7 +231,7 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
         h:
             Step size / mesh width.
         method:
-            Algorithm: ``"shooting_newton"`` or ``"finite_difference"``.
+            Algorithm (:class:`NonlinearBVPMethod`).
         M:
             Maximum number of outer iterations.
         tol:
@@ -241,7 +240,6 @@ class SecondOrderODE_BVP(OrdinaryDifferentialEquation):
             Initial guess for :math:`y'(a)` (shooting) or interior node values
             (finite difference).
         """
-        method = NonlinearBVPMethod(method)
 
         if method is NonlinearBVPMethod.SHOOTING_NEWTON:
             return self._solve_shooting_newton(h, M, tol, initial_approximation)

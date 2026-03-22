@@ -41,7 +41,7 @@ class FirstOrderLinearODE(LinearODE):
     def solve(
         self,
         h: float = 0.1,
-        method: ODEMethod | str = ODEMethod.EULER,
+        method: ODEMethod = ODEMethod.EULER,
         n: int = 1,
         step: int = 2,
         points: list[float] | None = None,
@@ -53,9 +53,7 @@ class FirstOrderLinearODE(LinearODE):
         h:
             Step size.
         method:
-            Solver algorithm.  Accepts :class:`ODEMethod` values or strings:
-            ``"euler"``, ``"runge-kutta"``, ``"taylor"``, ``"trapezoidal"``,
-            ``"adam-bashforth"``, ``"adam-moulton"``, ``"predictor-corrector"``.
+            Solver algorithm (:class:`ODEMethod`).
         n:
             Order parameter for Taylor / Runge-Kutta methods.
         step:
@@ -66,7 +64,6 @@ class FirstOrderLinearODE(LinearODE):
         if points is None:
             points = []
 
-        method = ODEMethod(method)
 
         if method is ODEMethod.EULER:
             return self._solve_taylor(h, 1)
